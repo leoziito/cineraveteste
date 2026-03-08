@@ -21,12 +21,12 @@
         
         /* Painel Esquerdo (Códigos Base e Resultado) */
         .left-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #222; background: #0a0a0a; min-height: 0; }
-        .tabs { display: flex; background: #111; border-bottom: 1px solid #222; }
+        .tabs { display: flex; background: #111; border-bottom: 1px solid #222; flex-shrink: 0;}
         .tab { flex: 1; text-align: center; padding: 12px 10px; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; text-transform: uppercase; transition: all 0.2s; border-bottom: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tab.active { color: #fff; border-bottom-color: #00c851; background: #1a1a1a; }
         
         .editor-container { flex: 1; display: flex; flex-direction: column; position: relative; min-height: 0; }
-        .editor-textarea { flex: 1; background: #0a0a0a; color: #d4d4d4; font-family: monospace; font-size: 13px; padding: 15px; padding-top: 50px; border: none; resize: none; outline: none; line-height: 1.5; white-space: pre; overflow-wrap: normal; overflow-x: auto; width: 100%; }
+        .editor-textarea { flex: 1; background: #0a0a0a; color: #d4d4d4; font-family: monospace; font-size: 13px; padding: 15px; padding-top: 50px; border: none; resize: none; outline: none; line-height: 1.5; white-space: pre; overflow-wrap: normal; overflow-x: auto; width: 100%; height: 100%; }
         .editor-textarea:focus { box-shadow: inset 0 0 0 1px #333; }
         
         #result-area { display: none; }
@@ -39,7 +39,7 @@
 
         /* Painel Direito (Regras de Integração) */
         .right-panel { width: 450px; display: flex; flex-direction: column; background: #000; z-index: 10; flex-shrink: 0; }
-        .right-header { padding: 15px 20px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .right-header { padding: 15px 20px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
         .right-title { font-size: 14px; font-weight: 800; text-transform: uppercase; }
         
         .patches-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
@@ -56,39 +56,45 @@
         .textarea-snippet { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 12px; font-family: monospace; outline: none; resize: vertical; min-height: 80px; white-space: pre; overflow-wrap: normal; overflow-x: auto;}
         .textarea-snippet:focus { border-color: #00c851; }
         
-        .btn-add-patch { background: transparent; border: 1px dashed #333; color: #aaa; padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: all 0.2s; margin: 0 15px 15px 15px; }
+        .btn-add-patch { background: transparent; border: 1px dashed #333; color: #aaa; padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: all 0.2s; margin: 0 15px 15px 15px; flex-shrink: 0;}
         .btn-add-patch:active { background: #111; color: #fff; border-color: #555; transform: scale(0.98); }
         
-        .right-footer { padding: 15px; background: #111; border-top: 1px solid #222; }
+        .right-footer { padding: 15px; background: #111; border-top: 1px solid #222; flex-shrink: 0;}
         .btn-merge { width: 100%; background: #00c851; color: #000; border: none; padding: 16px; border-radius: 10px; font-size: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0, 200, 81, 0.3); }
         .btn-merge:active { transform: scale(0.96); box-shadow: none; }
 
         /* Toast */
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 800; opacity: 0; transition: all 0.3s ease; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 800; opacity: 0; transition: all 0.3s ease; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; pointer-events: none;}
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* Responsividade para Celulares (Mobile) */
+        /* Responsividade para Celulares (Mobile) - AQUI ESTÁ A CORREÇÃO DA ROLAGEM */
         @media (max-width: 768px) {
-            header { padding: 12px 15px; }
+            /* Remove a limitação de 100vh para permitir rolagem natural do navegador */
+            body { height: auto; overflow: visible; display: block; }
+            
+            header { padding: 12px 15px; position: sticky; top: 0; z-index: 100;}
             .logo { font-size: 16px; }
             .header-subtitle { font-size: 10px; }
             
-            .main-container { flex-direction: column; }
+            .main-container { flex-direction: column; height: auto; overflow: visible; display: block; }
             
-            .left-panel { flex: none; height: 45vh; border-right: none; border-bottom: 2px solid #222; }
+            /* Trava uma altura específica só para a caixa de código no mobile */
+            .left-panel { flex: none; height: 350px; border-right: none; border-bottom: 2px solid #222; display: flex; flex-direction: column; }
             
-            .right-panel { width: 100%; flex: 1; border-top: 1px solid #111; }
+            /* O painel direito agora ocupa o espaço que precisar e desce a página */
+            .right-panel { width: 100%; height: auto; flex: none; display: block; }
+            .patches-list { height: auto; overflow-y: visible; padding: 10px; gap: 15px; display: flex; flex-direction: column; }
             
             .tab { font-size: 11px; padding: 12px 5px; }
-            
             .editor-textarea { font-size: 12px; }
-            
             .btn-icon { padding: 6px 10px; font-size: 11px; }
-            
-            .patches-list { padding: 10px; gap: 10px; }
             .patch-card { padding: 12px; }
-            .btn-add-patch { margin: 0 10px 10px 10px; padding: 12px; }
-            .right-footer { padding: 10px; }
+            
+            /* Ajustes para o botão de adicionar patch não ficar espremido */
+            .btn-add-patch { margin: 10px; width: calc(100% - 20px); padding: 12px; display: block; }
+            
+            /* O footer do botão verdão fica preso no fundo ou no final do conteúdo */
+            .right-footer { padding: 15px; position: sticky; bottom: 0; z-index: 50; border-top: 1px solid #333; }
             .btn-merge { padding: 14px; font-size: 14px; }
         }
     </style>
@@ -97,7 +103,7 @@
 
     <header>
         <div class="logo">CINE<span>MERGE</span></div>
-        <div class="header-subtitle">Auto Patcher</div>
+        <div class="header-subtitle">Auto Patcher Mobile</div>
     </header>
 
     <div class="main-container">
@@ -136,10 +142,10 @@
                 <!-- Os cards de patch são inseridos aqui via JS -->
             </div>
             
-            <button class="btn-add-patch" onclick="addPatchCard()">+ Nova Regra</button>
+            <button class="btn-add-patch" onclick="addPatchCard()">+ Adicionar Nova Regra</button>
             
             <div class="right-footer">
-                <button class="btn-merge" onclick="applyMerges()">Fundir (Merge)</button>
+                <button class="btn-merge" onclick="applyMerges()">Fundir Código (Merge)</button>
             </div>
         </div>
     </div>
@@ -210,8 +216,8 @@
                 </div>
             `;
             container.appendChild(div);
-            // Faz scroll para o novo card suavemente
-            div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            // Faz scroll para o novo card para facilitar no celular
+            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function removePatch(id) {
@@ -231,6 +237,7 @@
             let baseCode = document.getElementById('base-code').value;
             if (!baseCode.trim()) {
                 showToast("Cole o código original na aba 1 primeiro!");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 switchTab('original');
                 return;
             }
@@ -272,6 +279,9 @@
 
             document.getElementById('final-code').value = baseCode;
             switchTab('result');
+            
+            // Sobe a tela lá pro topo para você ver o código gerado
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (successCount === patches.length) {
                 showToast("Integração Perfeita! Código gerado.");
