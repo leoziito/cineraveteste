@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CineMerge - Integrador de Código</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #050505; color: #ffffff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Header */
+        header { background-color: #111; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; flex-shrink: 0; }
+        .logo { font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: #00c851; }
+        .header-subtitle { font-size: 12px; color: #888; font-weight: 600; }
+        
+        .main-container { display: flex; flex: 1; overflow: hidden; flex-direction: row; }
+        
+        /* Painel Esquerdo (Códigos Base e Resultado) */
+        .left-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #222; background: #0a0a0a; min-height: 0; }
+        .tabs { display: flex; background: #111; border-bottom: 1px solid #222; }
+        .tab { flex: 1; text-align: center; padding: 12px 10px; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; text-transform: uppercase; transition: all 0.2s; border-bottom: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tab.active { color: #fff; border-bottom-color: #00c851; background: #1a1a1a; }
+        
+        .editor-container { flex: 1; display: flex; flex-direction: column; position: relative; min-height: 0; }
+        .editor-textarea { flex: 1; background: #0a0a0a; color: #d4d4d4; font-family: monospace; font-size: 13px; padding: 15px; padding-top: 50px; border: none; resize: none; outline: none; line-height: 1.5; white-space: pre; overflow-wrap: normal; overflow-x: auto; width: 100%; }
+        .editor-textarea:focus { box-shadow: inset 0 0 0 1px #333; }
+        
+        #result-area { display: none; }
+        
+        .floating-action { position: absolute; top: 10px; right: 15px; display: flex; gap: 10px; z-index: 5; }
+        .btn-icon { background: #222; border: 1px solid #333; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn-icon:hover { background: #333; }
+        .btn-icon:active { transform: scale(0.95); }
+        .btn-icon svg { width: 14px; height: 14px; fill: #fff; }
+
+        /* Painel Direito (Regras de Integração) */
+        .right-panel { width: 450px; display: flex; flex-direction: column; background: #000; z-index: 10; flex-shrink: 0; }
+        .right-header { padding: 15px 20px; background: #111; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .right-title { font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        
+        .patches-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .patch-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.3s; }
+        .patch-header { display: flex; justify-content: space-between; align-items: center; }
+        .patch-title { font-size: 13px; font-weight: 800; color: #aaa; }
+        .btn-remove { background: none; border: none; color: #ff4a4a; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; padding: 5px; }
+        .btn-remove:active { opacity: 0.7; }
+        
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; }
+        .select-base { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; outline: none; appearance: auto; }
+        .textarea-snippet { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 12px; font-family: monospace; outline: none; resize: vertical; min-height: 80px; white-space: pre; overflow-wrap: normal; overflow-x: auto;}
+        .textarea-snippet:focus { border-color: #00c851; }
+        
+        .btn-add-patch { background: transparent; border: 1px dashed #333; color: #aaa; padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: all 0.2s; margin: 0 15px 15px 15px; }
+        .btn-add-patch:active { background: #111; color: #fff; border-color: #555; transform: scale(0.98); }
+        
+        .right-footer { padding: 15px; background: #111; border-top: 1px solid #222; }
+        .btn-merge { width: 100%; background: #00c851; color: #000; border: none; padding: 16px; border-radius: 10px; font-size: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0, 200, 81, 0.3); }
+        .btn-merge:active { transform: scale(0.96); box-shadow: none; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 800; opacity: 0; transition: all 0.3s ease; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Responsividade para Celulares (Mobile) */
+        @media (max-width: 768px) {
+            header { padding: 12px 15px; }
+            .logo { font-size: 16px; }
+            .header-subtitle { font-size: 10px; }
+            
+            .main-container { flex-direction: column; }
+            
+            .left-panel { flex: none; height: 45vh; border-right: none; border-bottom: 2px solid #222; }
+            
+            .right-panel { width: 100%; flex: 1; border-top: 1px solid #111; }
+            
+            .tab { font-size: 11px; padding: 12px 5px; }
+            
+            .editor-textarea { font-size: 12px; }
+            
+            .btn-icon { padding: 6px 10px; font-size: 11px; }
+            
+            .patches-list { padding: 10px; gap: 10px; }
+            .patch-card { padding: 12px; }
+            .btn-add-patch { margin: 0 10px 10px 10px; padding: 12px; }
+            .right-footer { padding: 10px; }
+            .btn-merge { padding: 14px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">CINE<span>MERGE</span></div>
+        <div class="header-subtitle">Auto Patcher</div>
+    </header>
+
+    <div class="main-container">
+        <!-- PAINEL ESQUERDO: Código -->
+        <div class="left-panel">
+            <div class="tabs">
+                <div class="tab active" id="tab-original" onclick="switchTab('original')">1. Original</div>
+                <div class="tab" id="tab-result" onclick="switchTab('result')">2. Atualizado</div>
+            </div>
+            
+            <div class="editor-container" id="original-area">
+                <div class="floating-action">
+                    <button class="btn-icon" onclick="clearTextarea('base-code')">Limpar</button>
+                </div>
+                <textarea id="base-code" class="editor-textarea" placeholder="Cole aqui o código original do index.html..."></textarea>
+            </div>
+            
+            <div class="editor-container" id="result-area">
+                <div class="floating-action">
+                    <button class="btn-icon" onclick="copyResult()" style="background: #00c851; color: #000; border: none;">
+                        <svg viewBox="0 0 24 24" fill="#000"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+                        Copiar Código
+                    </button>
+                </div>
+                <textarea id="final-code" class="editor-textarea" readonly placeholder="O código mesclado aparecerá aqui..."></textarea>
+            </div>
+        </div>
+
+        <!-- PAINEL DIREITO: Regras de Integração -->
+        <div class="right-panel">
+            <div class="right-header">
+                <div class="right-title">Regras (Patches)</div>
+            </div>
+            
+            <div class="patches-list" id="patches-container">
+                <!-- Os cards de patch são inseridos aqui via JS -->
+            </div>
+            
+            <button class="btn-add-patch" onclick="addPatchCard()">+ Nova Regra</button>
+            
+            <div class="right-footer">
+                <button class="btn-merge" onclick="applyMerges()">Fundir (Merge)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Ação realizada!</div>
+
+    <script>
+        let patchCounter = 0;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-original').classList.remove('active');
+            document.getElementById('tab-result').classList.remove('active');
+            document.getElementById('original-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'none';
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`${tab}-area`).style.display = 'flex';
+        }
+
+        function clearTextarea(id) {
+            document.getElementById(id).value = '';
+            showToast("Área limpa.");
+        }
+
+        function copyResult() {
+            const finalCode = document.getElementById('final-code').value;
+            if (!finalCode) return showToast("Nenhum código para copiar.");
+            navigator.clipboard.writeText(finalCode).then(() => {
+                showToast("Código copiado! Cole no seu projeto.");
+            }).catch(() => showToast("Erro ao copiar. Tente manualmente."));
+        }
+
+        function addPatchCard() {
+            patchCounter++;
+            const container = document.getElementById('patches-container');
+            const id = `patch-${patchCounter}`;
+            
+            const div = document.createElement('div');
+            div.className = 'patch-card';
+            div.id = id;
+            div.innerHTML = `
+                <div class="patch-header">
+                    <span class="patch-title">Regra #${patchCounter}</span>
+                    <button class="btn-remove" onclick="removePatch('${id}')">Remover</button>
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Ação:</span>
+                    <select class="select-base patch-action">
+                        <option value="replace">Substituir exatamente</option>
+                        <option value="insert_before">Colar ACIMA do Alvo (Antes)</option>
+                        <option value="insert_after">Colar ABAIXO do Alvo (Depois)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <span class="input-label">O que procurar? (Alvo):</span>
+                    <textarea class="textarea-snippet patch-target" placeholder="Ex: <button class='btn-edit-profile'..."></textarea>
+                </div>
+                <div class="input-group">
+                    <span class="input-label">Código Novo:</span>
+                    <textarea class="textarea-snippet patch-newcode" placeholder="Cole o código fornecido pela IA aqui..."></textarea>
+                </div>
+            `;
+            container.appendChild(div);
+            // Faz scroll para o novo card suavemente
+            div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function removePatch(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // Regex Master que ignora diferenças de espaços em branco, quebras de linha e tabulações
+        function escapeRegExpAndMakeFlexible(string) {
+            // Escapa caracteres sensíveis de Regex
+            let escaped = string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Troca todos os espaços/quebras reais da string por um buscador curinga de espaços (\s+)
+            return escaped.replace(/\\s+|\s+/g, '\\s+');
+        }
+
+        function applyMerges() {
+            let baseCode = document.getElementById('base-code').value;
+            if (!baseCode.trim()) {
+                showToast("Cole o código original na aba 1 primeiro!");
+                switchTab('original');
+                return;
+            }
+
+            const patches = document.querySelectorAll('.patch-card');
+            if (patches.length === 0) {
+                showToast("Adicione pelo menos uma regra.");
+                return;
+            }
+
+            let successCount = 0;
+
+            patches.forEach(card => {
+                const action = card.querySelector('.patch-action').value;
+                const targetRaw = card.querySelector('.patch-target').value.trim();
+                const newCode = card.querySelector('.patch-newcode').value;
+
+                if (!targetRaw) return;
+
+                card.style.borderColor = '#333'; // Reseta a cor
+
+                const flexRegex = new RegExp(escapeRegExpAndMakeFlexible(targetRaw));
+
+                if (flexRegex.test(baseCode)) {
+                    if (action === 'replace') {
+                        baseCode = baseCode.replace(flexRegex, newCode);
+                    } else if (action === 'insert_before') {
+                        baseCode = baseCode.replace(flexRegex, newCode + '\n$&');
+                    } else if (action === 'insert_after') {
+                        baseCode = baseCode.replace(flexRegex, '$&\n' + newCode);
+                    }
+                    card.style.borderColor = '#00c851'; // Ficou verde = Integrado com sucesso!
+                    successCount++;
+                } else {
+                    card.style.borderColor = '#ff4a4a'; // Ficou vermelho = Não achou o alvo
+                    console.warn("Alvo não encontrado na regra:", targetRaw);
+                }
+            });
+
+            document.getElementById('final-code').value = baseCode;
+            switchTab('result');
+
+            if (successCount === patches.length) {
+                showToast("Integração Perfeita! Código gerado.");
+            } else {
+                showToast(`${successCount} de ${patches.length} regras aplicadas. Verifique as marcadas em vermelho.`);
+            }
+        }
+
+        // Inicia automaticamente com um patch vazio
+        window.onload = addPatchCard;
+    </script>
+</body>
+</html>
