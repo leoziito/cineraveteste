@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NetCine - App Premium</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+
+    <style>
+        body { background-color: #0c0c0c; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -ms-overflow-style: none; scrollbar-width: none; }
+        body::-webkit-scrollbar { display: none; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-btn { color: #6b7280; transition: all 0.2s ease; }
+        .nav-btn.active { color: #ffffff; transform: scale(1.05); }
+        .logo-text { font-family: 'Luckiest Guy', cursive; letter-spacing: 0.05em; text-shadow: 2px 2px 0 #000, 0px 4px 8px rgba(0,0,0,0.8); }
+        #main-header { transition: background-color 0.3s ease, backdrop-filter 0.3s ease; }
+        select { -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>"); background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; background-size: 14px; }
+        
+        /* Animações Corrigidas (Trabalhando apenas no Eixo Y) */
+        @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(20px); opacity: 0; } }
+        
+        .toast-enter { animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .toast-exit { animation: fadeOutDown 0.3s ease-in forwards; }
+    </style>
+</head>
+<body class="h-screen w-full flex flex-col relative overflow-hidden text-sm">
+
+    <!-- Container Global de Toasts (Avisos) -->
+    <div id="toast-container" class="fixed bottom-24 left-0 right-0 mx-auto z-[150] flex flex-col items-center gap-2 w-[90%] max-w-md pointer-events-none"></div>
+
+    <header id="main-header" class="w-full h-20 absolute top-0 left-0 z-50 flex items-center justify-center pt-4 bg-gradient-to-b from-[#0c0c0c] via-[#0c0c0c]/80 to-transparent pointer-events-none select-none">
+        <div class="logo-text flex items-center justify-center text-4xl text-white">
+            <span class="inline-block transform -rotate-3">N</span>
+            <span class="relative inline-block transform -translate-y-1 rotate-2">E<div class="absolute -top-5 -left-2 text-2xl transform -rotate-12 drop-shadow-md">👑</div></span>
+            <span class="inline-block transform translate-y-1 -rotate-2 mr-1">T</span>
+            <span class="inline-block transform rotate-3">C</span>
+            <span class="inline-block transform -translate-y-1 -rotate-2">I</span>
+            <span class="inline-block transform rotate-1">N</span>
+            <span class="relative inline-block transform translate-y-1 -rotate-3">E<div class="absolute -top-5 -right-2 text-2xl transform rotate-12 drop-shadow-md">👑</div></span>
+        </div>
+        
+    </header>
+
+    <main id="main-content" class="flex-1 w-full h-full overflow-y-auto pt-24 pb-28 relative z-0">
+        
+        <div id="aba-inicio" class="tab-content active min-h-[100vh] w-full px-4 pt-6 pb-10">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-fire text-amber-500"></i> Recém Adicionados</h2>
+            
+            <div id="carousel-recem-adicionados" class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth" style="scrollbar-width: none;">
+                <div class="flex flex-col items-center justify-center w-full py-10 text-gray-500">
+                    <i class="ph ph-spinner animate-spin text-2xl mb-2"></i><p class="text-xs">Carregando catálogo...</p>
+                </div>
+            </div>
+            
+            <h2 class="text-xl font-bold text-white mb-4 mt-6 flex items-center gap-2"><i class="ph-fill ph-popcorn text-blue-500"></i> Filmes Disponíveis</h2>
+            <div id="grid-todos-filmes" class="grid grid-cols-3 gap-3"></div>
+        </div>
+        <div id="aba-filmes" class="tab-content min-h-[100vh] w-full px-4"><div class="flex flex-col items-center justify-center pt-20 text-gray-500"><p>Filmes (Em breve)</p></div></div>
+        <div id="aba-series" class="tab-content min-h-[100vh] w-full px-4"><div class="flex flex-col items-center justify-center pt-20 text-gray-500"><p>Séries (Em breve)</p></div></div>
+        
+        <!-- Aba: Catálogo -->
+        <div id="aba-catalogo" class="tab-content min-h-[100vh] w-full px-4">
+            <div class="flex flex-col w-full h-full pb-10">
+                <div class="relative w-full mb-4">
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                    <input type="text" id="input-busca" placeholder="Buscar filmes, séries, elenco..." class="w-full bg-[#1c1c1c] text-white text-sm rounded-full py-3.5 pl-12 pr-4 border border-white/5 focus:border-[#FCD34D]/50 focus:outline-none focus:ring-1 focus:ring-[#FCD34D]/50 transition-all">
+                </div>
+                <div class="flex items-center justify-between gap-2 mb-6">
+                    <select id="select-genero" class="flex-1 bg-[#1c1c1c] text-white text-[11px] sm:text-xs rounded-lg py-3 pl-3 pr-6 border border-white/5 focus:border-white/20 focus:outline-none"><option value="">Gêneros</option></select>
+                    <select id="select-ano" class="flex-1 bg-[#1c1c1c] text-white text-[11px] sm:text-xs rounded-lg py-3 pl-3 pr-6 border border-white/5 focus:border-white/20 focus:outline-none"><option value="">Ano</option></select>
+                    <button class="flex-1 bg-[#1c1c1c] text-gray-400 hover:text-white text-[11px] sm:text-xs rounded-lg py-3 px-2 border border-white/5 hover:border-white/20 flex items-center justify-center gap-1"><i class="ph-bold ph-arrows-counter-clockwise"></i>Redefinir</button>
+                </div>
+                <div class="flex flex-col items-center justify-center pt-20 text-gray-500">
+                    <i class="ph ph-film-strip text-4xl mb-2 opacity-50"></i><p class="text-xs">Catálogo Público em Breve</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: PAINEL ADM -->
+        <div id="aba-adm" class="tab-content min-h-[100vh] w-full px-4 pb-10">
+            
+            <!-- Vista 1: Home Adm -->
+            <div id="adm-home" class="flex flex-col gap-4 mt-6">
+                <h2 class="text-xl font-bold mb-2">Painel de Controle</h2>
+                
+                <div onclick="window.abrirBuscaTmdb()" class="bg-[#1c1c1c] rounded-xl p-5 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-amber-500/50 transition-colors">
+                    <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center"><i class="ph-bold ph-upload-simple text-2xl"></i></div>
+                    <div><h3 class="font-bold text-white text-base">Publicar Novo</h3><p class="text-xs text-gray-400">Buscar no TMDB e publicar</p></div>
+                </div>
+
+                <div onclick="window.abrirGerenciador()" class="bg-[#1c1c1c] rounded-xl p-5 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 transition-colors">
+                    <div class="w-12 h-12 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center"><i class="ph-bold ph-pencil-simple text-2xl"></i></div>
+                    <div><h3 class="font-bold text-white text-base">Editar / Gerenciar</h3><p class="text-xs text-gray-400">Ver publicados e rascunhos</p></div>
+                </div>
+
+                <!-- Novo Card: Cadastrar Adm -->
+                <div onclick="window.abrirCadastroAdm()" class="bg-[#1c1c1c] rounded-xl p-5 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-purple-500/50 transition-colors">
+                    <div class="w-12 h-12 bg-purple-500/20 text-purple-500 rounded-full flex items-center justify-center"><i class="ph-bold ph-user-plus text-2xl"></i></div>
+                    <div><h3 class="font-bold text-white text-base">Cadastrar Adm</h3><p class="text-xs text-gray-400">Criar contas para a equipe</p></div>
+                </div>
+            </div>
+
+            <!-- Vista 2: Busca TMDB -->
+            <div id="adm-busca" class="hidden flex-col gap-4 mt-6">
+                <button onclick="window.voltarAdmHome()" class="text-amber-500 flex items-center gap-1 text-sm w-max"><i class="ph-bold ph-arrow-left"></i> Voltar</button>
+                <h2 class="text-xl font-bold">Buscar Título (TMDB)</h2>
+                <div class="relative w-full">
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                    <input type="text" id="tmdb-search-input" placeholder="Digite o nome..." class="w-full bg-[#1c1c1c] text-white rounded-xl py-3.5 pl-12 pr-4 border border-white/5 focus:border-amber-500/50 focus:outline-none">
+                </div>
+                <div id="tmdb-results" class="flex flex-col gap-2 mt-2"></div>
+            </div>
+
+            <!-- Vista 3: Formulário de Edição/Publicação -->
+            <div id="adm-form" class="hidden flex-col gap-4 mt-6">
+                 <div class="flex justify-between items-center mb-2">
+                    <button onclick="window.fecharFormulario()" class="text-amber-500 flex items-center gap-1 text-sm"><i class="ph-bold ph-arrow-left"></i> Voltar</button>
+                    <span id="form-mode-badge" class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-xs font-bold">Novo</span>
+                </div>
+                <h2 class="text-xl font-bold">Informações Básicas</h2>
+                <div class="flex flex-col gap-4 bg-[#1c1c1c] p-4 rounded-xl border border-white/5">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Título</label>
+                        <input type="text" id="form-title" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white focus:border-amber-500 focus:outline-none font-bold">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">URL da Imagem (Poster)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="form-poster" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none font-mono">
+                            <img id="form-poster-preview" src="" class="w-12 h-12 object-cover rounded border border-white/10 bg-black">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Sinopse</label>
+                        <textarea id="form-synopsis" rows="4" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex flex-col gap-1 flex-1">
+                            <label class="text-xs text-gray-400">Ano</label>
+                            <input type="number" id="form-year" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                        <div class="flex flex-col gap-1 flex-1">
+                            <label class="text-xs text-gray-400">Nota TMDB</label>
+                            <input type="text" id="form-rating" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Gêneros (Separados por vírgula)</label>
+                        <input type="text" id="form-genres" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none">
+                    </div>
+                </div>
+                <div id="form-media-container" class="flex flex-col gap-4"></div>
+                <button onclick="window.abrirPreview()" class="w-full bg-amber-500 text-black font-bold text-lg rounded-xl py-4 mt-4 hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20">
+                    Visualizar e Salvar
+                </button>
+            </div>
+
+            <!-- Vista 4: Gerenciador / Editar Conteúdos -->
+            <div id="adm-gerenciar" class="hidden flex-col gap-4 mt-6">
+                <button onclick="window.voltarAdmHome()" class="text-blue-500 flex items-center gap-1 text-sm w-max"><i class="ph-bold ph-arrow-left"></i> Voltar</button>
+                <h2 class="text-xl font-bold">Gerenciar Conteúdo</h2>
+                <div class="relative w-full mb-2">
+                    <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                    <input type="text" id="manage-search-input" placeholder="Buscar nos publicados..." class="w-full bg-[#1c1c1c] text-white rounded-xl py-3.5 pl-12 pr-4 border border-white/5 focus:border-blue-500/50 focus:outline-none">
+                </div>
+                <div id="manage-results" class="flex flex-col gap-3"></div>
+            </div>
+
+            <!-- Vista 5: Cadastrar Administrador (NOVO) -->
+            <div id="adm-cadastro" class="hidden flex-col gap-4 mt-6">
+                <button onclick="window.voltarAdmHome()" class="text-purple-500 flex items-center gap-1 text-sm w-max"><i class="ph-bold ph-arrow-left"></i> Voltar</button>
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-500/20 text-purple-500 rounded-full flex items-center justify-center"><i class="ph-bold ph-user-plus text-xl"></i></div>
+                    <h2 class="text-xl font-bold">Novo Administrador</h2>
+                </div>
+
+                <div class="flex flex-col gap-4 bg-[#1c1c1c] p-4 rounded-xl border border-white/5">
+                    
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Nome Completo</label>
+                        <input type="text" id="cad-nome" placeholder="Ex: João Silva" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none font-bold">
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">E-mail</label>
+                        <input type="email" id="cad-email" placeholder="admin@netcine.com" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none font-mono">
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Senha</label>
+                        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none font-mono">
+                    </div>
+
+                </div>
+
+                <!-- Área de Sucesso (Inicialmente oculta) -->
+                <div id="cad-sucesso" class="hidden flex-col gap-3 bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
+                    <p class="text-xs text-green-400 font-bold flex items-center gap-2"><i class="ph-fill ph-check-circle text-lg"></i> Administrador criado com sucesso!</p>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] text-gray-400">ID do Administrador (Copie este código)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="cad-id-gerado" readonly class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-2 text-white text-xs font-mono text-center">
+                            <button onclick="window.copiarIdAdm()" class="bg-purple-500/20 text-purple-400 px-4 rounded-lg hover:bg-purple-500 hover:text-white transition-colors flex items-center justify-center"><i class="ph-bold ph-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-criar-adm" onclick="window.criarAdministrador()" class="w-full bg-purple-500 text-white font-bold text-lg rounded-xl py-4 mt-2 hover:bg-purple-400 transition-colors shadow-lg shadow-purple-500/20">
+                    Criar Administrador
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Menu Inferior -->
+    <nav class="absolute bottom-0 left-0 w-full h-20 bg-[#0c0c0c]/90 backdrop-blur-lg flex items-center justify-around z-50 pb-safe px-1 border-t border-white/5">
+        <button onclick="window.mudarAba('inicio', this)" class="nav-btn active flex flex-col items-center justify-center w-14 gap-1.5 cursor-pointer"><i class="ph-fill ph-house text-xl"></i><span class="text-[9px] font-medium tracking-wide">Início</span></button>
+        <button onclick="window.mudarAba('filmes', this)" class="nav-btn flex flex-col items-center justify-center w-14 gap-1.5 cursor-pointer"><i class="ph-bold ph-film-slate text-xl"></i><span class="text-[9px] font-medium tracking-wide">Filmes</span></button>
+        <button onclick="window.mudarAba('series', this)" class="nav-btn flex flex-col items-center justify-center w-14 gap-1.5 cursor-pointer"><i class="ph-bold ph-monitor-play text-xl"></i><span class="text-[9px] font-medium tracking-wide">Séries</span></button>
+        <button onclick="window.mudarAba('catalogo', this)" class="nav-btn flex flex-col items-center justify-center w-14 gap-1.5 cursor-pointer"><i class="ph-bold ph-magnifying-glass text-xl"></i><span class="text-[9px] font-medium tracking-wide">Catálogo</span></button>
+        <button onclick="window.mudarAba('adm', this)" class="nav-btn flex flex-col items-center justify-center w-14 gap-1.5 cursor-pointer text-amber-500/50 hover:text-amber-500 transition-colors"><i class="ph-bold ph-gear text-xl"></i><span class="text-[9px] font-medium tracking-wide">Painel Adm</span></button>
+    </nav>
+
+    <!-- Modal Em Massa -->
+    <div id="modal-overlay" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        
+        <div id="modal-delete" class="hidden bg-[#151515] w-full max-w-sm rounded-2xl border border-red-500/20 flex flex-col overflow-hidden shadow-2xl shadow-red-900/20">
+            <div class="p-6 flex flex-col items-center text-center gap-3">
+                <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-2"><i class="ph-bold ph-warning text-3xl"></i></div>
+                <h3 class="font-bold text-white text-lg">Excluir Conteúdo?</h3>
+                <p class="text-xs text-gray-400">Esta ação é permanente. Tem certeza que deseja apagar este conteúdo do banco de dados?</p>
+            </div>
+            <div class="p-4 bg-[#1c1c1c] border-t border-white/5 flex gap-2">
+                <button onclick="window.fecharModalDelete()" class="flex-1 bg-transparent border border-white/20 text-white py-3 rounded-lg hover:bg-white/5 font-bold text-xs transition-colors">Cancelar</button>
+                <button onclick="window.confirmarExclusao()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 shadow-lg shadow-red-500/20 text-xs transition-colors">Sim, Apagar</button>
+            </div>
+        </div>
+
+        <div id="modal-em-massa" class="hidden bg-[#151515] w-full max-w-md max-h-[90vh] rounded-2xl border border-white/10 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-white/5 flex justify-between items-center bg-[#1c1c1c]">
+                <h3 class="font-bold text-white">Adicionar Links em Massa</h3>
+                <button onclick="window.fecharModal()" class="text-gray-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div class="p-4 flex flex-col gap-3 overflow-y-auto">
+                <p class="text-[11px] text-gray-400">Cole os links de Embed/Iframe (um por linha). O sistema irá organizá-los na ordem.</p>
+                <textarea id="textarea-em-massa" rows="5" class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:outline-none focus:border-amber-500 font-mono leading-relaxed" placeholder="https://...&#10;<iframe>..."></textarea>
+                
+                <h4 class="text-xs font-bold text-gray-300 mt-2">Pré-visualização:</h4>
+                <div id="massa-preview-list" class="bg-[#0c0c0c] border border-white/10 rounded-lg p-2 flex flex-col gap-1 min-h-[60px] max-h-[150px] overflow-y-auto text-xs text-gray-400 font-mono">
+                    Cole os links acima para visualizar...
+                </div>
+                
+                <button id="btn-confirmar-massa" class="w-full bg-amber-500 text-black font-bold py-3 mt-2 rounded-lg hover:bg-amber-400 shadow-lg shadow-amber-500/20">Confirmar e Adicionar</button>
+            </div>
+        </div>
+
+        <!-- Modal de Preview da Publicação -->
+        <div id="modal-preview" class="hidden bg-[#151515] w-full max-w-md max-h-[85vh] rounded-2xl border border-white/10 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-white/5 flex justify-between items-center bg-[#1c1c1c]">
+                <h3 class="font-bold text-white">Resumo da Ação</h3>
+                <button onclick="window.fecharModal()" class="text-gray-400 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div id="preview-content" class="p-4 flex flex-col gap-4 overflow-y-auto"></div>
+            <div class="p-4 bg-[#1c1c1c] border-t border-white/5 flex gap-2">
+                <button onclick="window.fecharModal()" class="flex-1 bg-transparent border border-white/20 text-white py-3 rounded-lg hover:bg-white/5">Voltar e Editar</button>
+                <button onclick="window.confirmarPublicacao()" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-400 shadow-lg shadow-green-500/20">Confirmar Salvar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Principal como Módulo -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Configuração Firebase do Usuário
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9Ey88q3h_EuvUpVX1keIOpJasbwAR-XY",
+            authDomain: "netcine-bd7f6.firebaseapp.com",
+            projectId: "netcine-bd7f6",
+            storageBucket: "netcine-bd7f6.firebasestorage.app",
+            messagingSenderId: "344153659536",
+            appId: "1:344153659536:web:f81b0fe093bdd2f6a3e015"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Chaves TMDB
+        const TMDB_API_KEY = "f8cc3c4078cfcbcea4ddf3042a66c507";
+        const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+        const IMG_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+        // Váriaveis Globais de Estado
+        let conteudosSalvos = []; 
+        let modoFormulario = 'novo'; 
+        let docIdEmEdicao = null;
+        let formState = getEmptyFormState();
+
+        function getEmptyFormState() {
+            return {
+                idTmdb: null, type: null, title: '', image: '', synopsis: '', year: '', genres: [], providers: [], note: 0, runtime: 0, status: 'public',
+                links: [],
+                totalSeasonsTmdb: 1, seasons: {} 
+            };
+        }
+
+        // ==========================================
+        // SISTEMA DE AUTENTICAÇÃO FIREBASE COM LOGIN ADM
+        // ==========================================
+        let currentUser = null;
+
+        const initAuth = async () => {
+            try {
+                // Só cria conta anônima se não houver NENHUM usuário logado
+                if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Falha na autenticação Firebase:", error);
+            }
+        };
+
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                carregarConteudoDoBanco();
+                
+                // Controle de Acesso Seguro (Painel Adm)
+                const loginDiv = document.getElementById('adm-login');
+                const homeDiv = document.getElementById('adm-home');
+                
+                if(loginDiv && homeDiv) {
+                    if (!user.isAnonymous) {
+                        // Está logado com e-mail de Admin! Libera a home
+                        loginDiv.classList.add('hidden'); loginDiv.classList.remove('flex');
+                        
+                        // Proteção visual para não mostrar a home se ele estiver no meio de uma edição
+                        if(document.getElementById('adm-form').classList.contains('hidden') && 
+                           document.getElementById('adm-gerenciar').classList.contains('hidden') && 
+                           document.getElementById('adm-busca').classList.contains('hidden') &&
+                           document.getElementById('adm-cadastro').classList.contains('hidden')) {
+                            homeDiv.classList.remove('hidden'); homeDiv.classList.add('flex');
+                        }
+                    } else {
+                        // Usuário público (Visitante) - Tranca na tela de login
+                        loginDiv.classList.remove('hidden'); loginDiv.classList.add('flex');
+                        homeDiv.classList.add('hidden'); homeDiv.classList.remove('flex');
+                    }
+                }
+            }
+        });
+
+        window.fazerLoginAdm = async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            if(!email || !senha) return window.showToast('Preencha e-mail e senha!', 'error');
+
+            const btn = document.getElementById('btn-fazer-login');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Verificando...';
+            btn.disabled = true;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+                document.getElementById('login-senha').value = ''; // Limpa a senha por segurança
+                window.showToast('Bem-vindo, Administrador!', 'success');
+            } catch (error) {
+                console.error(error);
+                window.showToast('Acesso negado. Credenciais inválidas.', 'error');
+            } finally {
+                btn.innerHTML = 'Desbloquear Painel';
+                btn.disabled = false;
+            }
+        };
+
+        window.fazerLogoutAdm = async () => {
+            try {
+                await signOut(auth);
+                window.showToast('Você saiu do Painel.', 'info');
+                // Ao deslogar o admin, re-conecta como visitante invisível para o site não quebrar
+                await signInAnonymously(auth);
+                window.mudarAba('inicio', document.querySelectorAll('.nav-btn')[0]);
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        // ==========================================
+        // UI BÁSICA E NAVEGAÇÃO
+        // ==========================================
+        // ==========================================
+        // SISTEMA DE TOASTS ESTILIZADO E CORRIGIDO
+        // ==========================================
+        window.showToast = (msg, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+
+            const toast = document.createElement('div');
+            
+            // Cores premium com glassmorphism calibrado
+            const colors = { 
+                success: 'bg-green-600/20 border-green-500/40 text-green-300 shadow-green-900/30', 
+                info: 'bg-blue-600/20 border-blue-500/40 text-blue-300 shadow-blue-900/30', 
+                error: 'bg-red-600/20 border-red-500/40 text-red-300 shadow-red-900/30' 
+            };
+            
+            // Estilização do card (w-full para ocupar o container centrado)
+            toast.className = `toast-enter w-full px-4 py-3.5 rounded-2xl border flex items-center gap-3 backdrop-blur-xl shadow-2xl transition-all duration-300 ${colors[type]}`;
+            
+            // HTML Interno
+            toast.innerHTML = `<i class="ph-fill ph-${type==='success'?'check-circle':type==='error'?'warning-circle':'info'} text-xl opacity-90"></i> <span class="font-bold text-white text-[13px] leading-snug tracking-wide flex-1 drop-shadow-md">${msg}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Saída limpa usando apenas classes CSS
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 350); 
+            }, 3500);
+        };
+
+        window.mudarAba = (nomeDaAba, btn) => {
+            document.querySelectorAll('.tab-content').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); const i = b.querySelector('i'); if(i.classList.contains('ph-fill')){ i.classList.remove('ph-fill'); i.classList.add('ph-bold'); }});
+            document.getElementById('aba-' + nomeDaAba).classList.add('active');
+            btn.classList.add('active');
+            const ic = btn.querySelector('i'); ic.classList.remove('ph-bold'); ic.classList.add('ph-fill');
+            document.getElementById('main-content').scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        const head = document.getElementById('main-header');
+        document.getElementById('main-content').addEventListener('scroll', (e) => {
+            if (e.target.scrollTop > 10) { head.classList.add('bg-[#0c0c0c]/85', 'backdrop-blur-lg'); head.classList.remove('bg-gradient-to-b'); } 
+            else { head.classList.remove('bg-[#0c0c0c]/85', 'backdrop-blur-lg'); head.classList.add('bg-gradient-to-b'); }
+        });
+
+        // ==========================================
+        // GERENCIAMENTO FIREBASE E EDIÇÃO (CAMINHOS CORRIGIDOS)
+        // ==========================================
+        const getAppId = () => typeof __app_id !== 'undefined' ? __app_id : 'default-netcine';
+
+        function getCollectionRef() {
+            // Acesso restrito apenas ao próprio usuário (REGRA 1 - Caminho de Dados Privado)
+            return collection(db, 'artifacts', getAppId(), 'users', currentUser.uid, 'conteudos');
+        }
+
+        function carregarConteudoDoBanco() {
+            if (!currentUser) return; // Proteção adicional
+
+            onSnapshot(getCollectionRef(), (snapshot) => {
+                conteudosSalvos = [];
+                snapshot.forEach(doc => { conteudosSalvos.push({ idDoc: doc.id, ...doc.data() }); });
+                
+                // Ordenação na memória (REGRA 2 - Sem ordenação complexa no Firestore)
+                conteudosSalvos.sort((a, b) => (b.lastUpdated || b.createdAt) - (a.lastUpdated || a.createdAt));
+                
+                renderGerenciador();
+            }, (error) => { console.error("Erro Snapshot Firestore", error); });
+        }
+
+        // ==========================================
+        // NAVEGAÇÃO ADM
+        // ==========================================
+        window.abrirBuscaTmdb = () => { document.getElementById('adm-home').classList.add('hidden'); document.getElementById('adm-busca').classList.remove('hidden'); document.getElementById('adm-busca').classList.add('flex'); document.getElementById('tmdb-search-input').focus(); };
+        window.abrirGerenciador = () => { document.getElementById('adm-home').classList.add('hidden'); document.getElementById('adm-gerenciar').classList.remove('hidden'); document.getElementById('adm-gerenciar').classList.add('flex'); renderGerenciador(); };
+        window.abrirCadastroAdm = () => {
+            document.getElementById('adm-home').classList.add('hidden');
+            document.getElementById('adm-cadastro').classList.remove('hidden');
+            document.getElementById('adm-cadastro').classList.add('flex');
+            document.getElementById('cad-nome').value = '';
+            document.getElementById('cad-email').value = '';
+            document.getElementById('cad-senha').value = '';
+            document.getElementById('cad-sucesso').classList.add('hidden');
+            document.getElementById('btn-criar-adm').classList.remove('hidden');
+        };
+        window.voltarAdmHome = () => {
+            document.getElementById('adm-busca').classList.add('hidden'); document.getElementById('adm-busca').classList.remove('flex');
+            document.getElementById('adm-gerenciar').classList.add('hidden'); document.getElementById('adm-gerenciar').classList.remove('flex');
+            document.getElementById('adm-form').classList.add('hidden'); document.getElementById('adm-form').classList.remove('flex');
+            document.getElementById('adm-cadastro').classList.add('hidden'); document.getElementById('adm-cadastro').classList.remove('flex');
+            document.getElementById('adm-home').classList.remove('hidden'); document.getElementById('adm-home').classList.add('flex');
+        };
+        window.fecharFormulario = () => {
+            document.getElementById('adm-form').classList.add('hidden'); document.getElementById('adm-form').classList.remove('flex');
+            if(modoFormulario === 'novo') window.abrirBuscaTmdb(); else window.abrirGerenciador();
+        };
+
+        // ==========================================
+        // LÓGICA DE GERENCIADOR
+        // ==========================================
+        document.getElementById('manage-search-input').addEventListener('input', renderGerenciador);
+
+        function renderGerenciador() {
+            const c = document.getElementById('manage-results');
+            if (!c) return;
+
+            const q = document.getElementById('manage-search-input').value.toLowerCase();
+            let filtered = conteudosSalvos.filter(item => item.title.toLowerCase().includes(q));
+            
+            if(filtered.length === 0) { c.innerHTML = '<p class="text-xs text-gray-500 text-center py-4">Nenhum conteúdo encontrado.</p>'; return; }
+
+            c.innerHTML = filtered.map(item => `
+                <div class="bg-[#1c1c1c] border border-white/5 rounded-xl p-3 flex gap-3 ${item.status === 'draft' ? 'border-amber-500/30 bg-amber-500/5' : ''}">
+                    <img src="${item.image || 'https://via.placeholder.com/100x150?text=Sem+Foto'}" class="w-16 h-24 object-cover rounded shadow border border-white/5 bg-black">
+                    <div class="flex flex-col flex-1 justify-between overflow-hidden">
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h4 class="font-bold text-white text-sm line-clamp-1">${item.title}</h4>
+                                ${item.status === 'draft' ? '<span class="bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0">Rascunho</span>' : '<span class="bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0">Público</span>'}
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">${item.type === 'movie' ? 'Filme' : 'Série'} • ${item.year}</p>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="window.editarConteudo('${item.idDoc}')" class="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white transition-colors py-1.5 rounded text-xs font-bold">Editar</button>
+                            <button onclick="window.alternarStatus('${item.idDoc}', '${item.status}')" class="flex-1 bg-gray-500/20 text-gray-300 hover:bg-gray-500 hover:text-white transition-colors py-1.5 rounded text-xs font-bold">${item.status === 'public' ? 'Rascunho' : 'Publicar'}</button>
+                            <button onclick="window.abrirModalDelete('${item.idDoc}')" class="px-3 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-colors py-1.5 rounded text-xs"><i class="ph-bold ph-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.alternarStatus = async (id, currentStatus) => {
+            if(!currentUser) return;
+            const newStatus = currentStatus === 'public' ? 'draft' : 'public';
+            await updateDoc(doc(getCollectionRef(), id), { status: newStatus, lastUpdated: Date.now() });
+            window.showToast(`Conteúdo movido para ${newStatus === 'draft' ? 'Rascunhos' : 'Público'}!`, 'success');
+        };
+
+        let idParaExcluir = null;
+        
+        window.abrirModalDelete = (id) => {
+            idParaExcluir = id;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-delete').classList.remove('hidden');
+            
+            // Esconde os outros modais por segurança
+            document.getElementById('modal-em-massa').classList.add('hidden');
+            document.getElementById('modal-preview').classList.add('hidden');
+        };
+
+        window.fecharModalDelete = () => {
+            idParaExcluir = null;
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('modal-delete').classList.add('hidden');
+        };
+
+        window.confirmarExclusao = async () => {
+            if(!currentUser || !idParaExcluir) return;
+            try {
+                await deleteDoc(doc(getCollectionRef(), idParaExcluir));
+                window.showToast('Conteúdo apagado para sempre.', 'success');
+                window.fecharModalDelete();
+            } catch(e) {
+                window.showToast('Erro ao apagar.', 'error');
+            }
+        };
+
+        // RENDERIZAÇÃO DA ABA INÍCIO (CARROSSEL E GRADE)
+        function renderInicio() {
+            const carrossel = document.getElementById('carousel-recem-adicionados');
+            const grid = document.getElementById('grid-todos-filmes');
+            if(!carrossel || !grid) return;
+
+            // Filtra só os que estão com status Público
+            const publicos = conteudosSalvos.filter(i => i.status === 'public');
+            
+            if(publicos.length === 0) {
+                carrossel.innerHTML = '<p class="text-xs text-gray-500 text-center w-full py-10">Nenhum título público ainda.</p>';
+                grid.innerHTML = '<p class="text-xs text-gray-500 col-span-3 text-center py-4">Catálogo vazio.</p>';
+                return;
+            }
+
+            // Pega os 8 mais recentes para o carrossel
+            const recentes = publicos.slice(0, 8);
+            
+            carrossel.innerHTML = recentes.map(item => `
+                <div class="snap-start shrink-0 w-32 flex flex-col gap-2 cursor-pointer active:scale-95 transition-transform" onclick="window.showToast('Assistir em breve!', 'info')">
+                    <div class="w-32 h-48 bg-[#1c1c1c] rounded-xl overflow-hidden relative shadow-lg shadow-black/50 border border-white/5">
+                        <img src="${item.image}" class="w-full h-full object-cover">
+                        <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-500 border border-amber-500/20 flex items-center gap-1">
+                            <i class="ph-fill ph-star"></i> ${item.note}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-white text-[11px] font-bold line-clamp-1">${item.title}</h4>
+                        <p class="text-[9px] text-gray-400 mt-0.5">${item.type === 'movie' ? 'Filme' : 'Série'} • ${item.year}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Pega todos os filmes para a grade (Futuramente faremos uma grade de séries também)
+            const filmes = publicos.filter(i => i.type === 'movie');
+            grid.innerHTML = filmes.map(item => `
+                <div class="flex flex-col gap-1 cursor-pointer active:scale-95 transition-transform" onclick="window.showToast('Assistir em breve!', 'info')">
+                    <div class="w-full aspect-[2/3] bg-[#1c1c1c] rounded-lg overflow-hidden border border-white/5 relative">
+                        <img src="${item.image}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editarConteudo = (idDoc) => {
+            const c = conteudosSalvos.find(i => i.idDoc === idDoc);
+            if(!c) return;
+            
+            modoFormulario = 'editar';
+            docIdEmEdicao = idDoc;
+            formState = JSON.parse(JSON.stringify(c));
+            
+            document.getElementById('adm-gerenciar').classList.add('hidden');
+            document.getElementById('form-mode-badge').innerText = 'Editando';
+            document.getElementById('form-mode-badge').className = 'bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold';
+            
+            document.getElementById('adm-form').classList.remove('hidden');
+            document.getElementById('adm-form').classList.add('flex');
+            sincronizarCamposEditaveis();
+            document.getElementById('main-content').scrollTo({ top: 0 });
+        };
+
+        // ==========================================
+        // FLUXO DE PUBLICAÇÃO (TMDB)
+        // ==========================================
+        let searchTimeout;
+        document.getElementById('tmdb-search-input').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const q = e.target.value.trim();
+            const resDiv = document.getElementById('tmdb-results');
+            if (q.length < 3) { resDiv.innerHTML = ''; return; }
+            resDiv.innerHTML = '<div class="text-center text-gray-500 py-4"><i class="ph ph-spinner animate-spin text-2xl"></i></div>';
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    resDiv.innerHTML = '';
+                    const results = data.results.filter(i => i.media_type === 'movie' || i.media_type === 'tv').slice(0,8);
+                    if(results.length === 0) { resDiv.innerHTML = '<p class="text-gray-500 text-center py-2">Nenhum resultado.</p>'; return; }
+
+                    results.forEach(item => {
+                        const title = item.title || item.name;
+                        const year = (item.release_date || item.first_air_date || '').substring(0,4);
+                        const img = item.poster_path ? `${IMG_BASE_URL}${item.poster_path}` : 'https://via.placeholder.com/100x150?text=S/C';
+                        const div = document.createElement('div');
+                        div.className = 'flex gap-3 bg-[#1c1c1c] p-2 rounded-xl border border-white/5 cursor-pointer hover:border-amber-500/50 transition-colors';
+                        div.innerHTML = `<img src="${img}" class="w-12 h-16 object-cover rounded-md bg-black"><div class="flex flex-col justify-center"><h4 class="font-bold text-white text-sm line-clamp-1">${title}</h4><div class="flex items-center gap-2 mt-1 text-xs text-gray-400">${item.media_type === 'movie' ? 'Filme' : 'Série'} • <span>${year}</span></div></div>`;
+                        div.onclick = () => carregarDetalhesTmdb(item.id, item.media_type);
+                        resDiv.appendChild(div);
+                    });
+                } catch(e) { resDiv.innerHTML = '<p class="text-red-500 text-center py-2">Erro na busca.</p>'; }
+            }, 400); 
+        });
+
+        async function carregarDetalhesTmdb(id, type) {
+            window.showToast('Extraindo dados do TMDB...', 'info');
+            try {
+                const res = await fetch(`${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers`);
+                const data = await res.json();
+                
+                modoFormulario = 'novo';
+                docIdEmEdicao = null;
+                formState = getEmptyFormState();
+
+                formState.idTmdb = data.id;
+                formState.type = type;
+                formState.title = data.title || data.name;
+                formState.image = data.poster_path ? `${IMG_BASE_URL}${data.poster_path}` : '';
+                formState.synopsis = data.overview || 'Sem sinopse disponível.';
+                formState.year = (data.release_date || data.first_air_date || '').substring(0,4);
+                formState.genres = data.genres.map(g => g.name);
+                formState.note = (data.vote_average || 0).toFixed(1);
+                formState.runtime = type === 'movie' ? data.runtime : (data.episode_run_time?.[0] || 0);
+                formState.totalSeasonsTmdb = type === 'tv' ? data.number_of_seasons : 0;
+
+                const watchBr = data['watch/providers']?.results?.BR;
+                if(watchBr && watchBr.flatrate) formState.providers = watchBr.flatrate.map(p => p.provider_name);
+
+                document.getElementById('adm-busca').classList.add('hidden'); document.getElementById('adm-busca').classList.remove('flex');
+                document.getElementById('form-mode-badge').innerText = 'Novo';
+                document.getElementById('form-mode-badge').className = 'bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-xs font-bold';
+                
+                document.getElementById('adm-form').classList.remove('hidden'); document.getElementById('adm-form').classList.add('flex');
+                
+                sincronizarCamposEditaveis();
+                window.showToast('Pronto para revisão!', 'success');
+                document.getElementById('main-content').scrollTo({ top: 0 });
+            } catch(e) { window.showToast('Erro ao carregar TMDB', 'error'); }
+        }
+
+        // ==========================================
+        // SINCRONIZAÇÃO E RENDERIZAÇÃO DO FORMULÁRIO
+        // ==========================================
+        function sincronizarCamposEditaveis() {
+            document.getElementById('form-title').value = formState.title;
+            document.getElementById('form-poster').value = formState.image;
+            document.getElementById('form-poster-preview').src = formState.image || 'https://via.placeholder.com/100';
+            document.getElementById('form-synopsis').value = formState.synopsis;
+            document.getElementById('form-year').value = formState.year;
+            document.getElementById('form-rating').value = formState.note;
+            document.getElementById('form-genres').value = formState.genres.join(', ');
+
+            renderMedia();
+        }
+
+        document.getElementById('form-title').addEventListener('input', e => formState.title = e.target.value);
+        document.getElementById('form-poster').addEventListener('input', e => { formState.image = e.target.value; document.getElementById('form-poster-preview').src = e.target.value; });
+        document.getElementById('form-synopsis').addEventListener('input', e => formState.synopsis = e.target.value);
+        document.getElementById('form-year').addEventListener('input', e => formState.year = e.target.value);
+        document.getElementById('form-rating').addEventListener('input', e => formState.note = e.target.value);
+        document.getElementById('form-genres').addEventListener('input', e => formState.genres = e.target.value.split(',').map(s=>s.trim()));
+
+        function renderMedia() {
+            const container = document.getElementById('form-media-container');
+            if(formState.type === 'movie') {
+                container.innerHTML = `<div class="flex justify-between items-center mt-2 border-b border-white/10 pb-2"><h2 class="text-xl font-bold">Links do Filme</h2><button onclick="window.addLinkFilme()" class="text-xs bg-amber-500/20 text-amber-500 px-3 py-1.5 rounded-full hover:bg-amber-500/40 font-bold">+ Adicionar Link</button></div><div id="movie-links-list" class="flex flex-col gap-3"></div>`;
+                renderMovieLinks();
+            } else {
+                container.innerHTML = `<div class="flex justify-between items-center mt-2 border-b border-white/10 pb-2"><h2 class="text-xl font-bold">Temporadas e Episódios</h2></div><div class="flex gap-2 mb-2" id="season-add-controls"></div><div id="seasons-container" class="flex flex-col gap-4"></div>`;
+                renderSeasons();
+            }
+        }
+
+        window.addLinkFilme = () => { formState.links.push({url: '', hdcam: false, legendado: false}); renderMovieLinks(); }
+        window.removeLinkFilme = (idx) => { formState.links.splice(idx, 1); renderMovieLinks(); }
+        
+        function renderMovieLinks() {
+            const c = document.getElementById('movie-links-list');
+            if(!c) return;
+            if(formState.links.length === 0) { c.innerHTML = '<div class="bg-amber-500/10 text-amber-500 border border-amber-500/20 p-4 rounded-xl text-center text-xs">Nenhum link. Adicione pelo menos um!</div>'; return; }
+            
+            c.innerHTML = formState.links.map((link, idx) => `
+                <div class="bg-[#1c1c1c] border border-white/5 rounded-xl p-4 flex flex-col gap-3 relative">
+                    <div class="absolute top-2 right-2 text-[10px] text-gray-500 font-bold">Opção ${idx+1} ${idx===0? '(Principal)':''}</div>
+                    <div class="flex flex-col gap-1 mt-2">
+                        <label class="text-[11px] text-gray-400">URL / Iframe do Vídeo</label>
+                        <div class="flex gap-2">
+                            <input type="text" value="${link.url}" oninput="formState.links[${idx}].url = this.value" placeholder="https://..." class="w-full bg-[#0c0c0c] border border-white/10 rounded-lg p-3 text-white text-xs focus:border-amber-500 focus:outline-none font-mono">
+                            <button onclick="window.removeLinkFilme(${idx})" class="bg-red-500/10 text-red-500 px-4 rounded-lg hover:bg-red-500 hover:text-white transition-colors"><i class="ph-bold ph-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 bg-[#0c0c0c] p-2 rounded-lg border border-white/5">
+                        <label class="flex items-center gap-2 text-xs cursor-pointer text-gray-300 hover:text-white"><input type="checkbox" ${link.hdcam ? 'checked' : ''} onchange="formState.links[${idx}].hdcam = this.checked" class="accent-amber-500 w-4 h-4 rounded"> Qualidade HDCAM</label>
+                        <label class="flex items-center gap-2 text-xs cursor-pointer text-gray-300 hover:text-white"><input type="checkbox" ${link.legendado ? 'checked' : ''} onchange="formState.links[${idx}].legendado = this.checked" class="accent-amber-500 w-4 h-4 rounded"> Áudio Legendado</label>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.addSeason = (sNum) => { if(!formState.seasons[sNum]) formState.seasons[sNum] = { episodes: {} }; renderSeasons(); };
+        window.removeSeason = (sNum) => { delete formState.seasons[sNum]; renderSeasons(); };
+
+        function renderSeasons() {
+            const controls = document.getElementById('season-add-controls');
+            const c = document.getElementById('seasons-container');
+            if(!controls || !c) return;
+
+            let existing = Object.keys(formState.seasons).map(Number);
+            let total = Math.max(formState.totalSeasonsTmdb, existing.length > 0 ? Math.max(...existing) + 1 : 1);
+            let missing = [];
+            for(let i=1; i<=total; i++) if(!existing.includes(i)) missing.push(i);
+
+            let ctrlHtml = '';
+            if(missing.length > 0) {
+                let next = Math.min(...missing);
+                ctrlHtml += `<button onclick="window.addSeason(${next})" class="bg-blue-500/20 text-blue-400 font-bold px-4 py-3 rounded-xl text-xs flex-1 border border-blue-500/20 hover:bg-blue-500/30 transition-colors">+ Add Temporada ${next}</button>`;
+                if(missing.length > 1) { ctrlHtml += `<select onchange="if(this.value) window.addSeason(this.value); this.value='';" class="bg-[#1c1c1c] border border-white/5 text-xs px-4 rounded-xl text-gray-300 focus:outline-none w-24 text-center"><option value="">Ou T...</option>${missing.map(m=>`<option value="${m}">Temp ${m}</option>`).join('')}</select>`; }
+            } else { ctrlHtml += `<button onclick="window.addSeason(${total+1})" class="bg-[#1c1c1c] text-gray-400 border border-white/5 font-bold px-4 py-3 rounded-xl text-xs w-full hover:bg-white/5">+ Add Temporada ${total+1} (Extra)</button>`; }
+            controls.innerHTML = ctrlHtml;
+
+            let sKeys = existing.sort((a,b)=>a-b);
+            if(sKeys.length === 0) { c.innerHTML = '<div class="bg-blue-500/10 text-blue-500 border border-blue-500/20 p-4 rounded-xl text-center text-xs">Nenhuma temporada adicionada.</div>'; return; }
+
+            c.innerHTML = sKeys.map(s => {
+                let eps = formState.seasons[s].episodes;
+                let epKeys = Object.keys(eps).map(Number).sort((a,b)=>a-b);
+                let epsHtml = epKeys.length === 0 ? '<p class="text-xs text-gray-500 text-center py-2">Sem episódios.</p>' : epKeys.map(e => `
+                    <div class="flex flex-col gap-2 bg-[#0c0c0c] border border-white/10 rounded-lg p-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-white/10 text-white font-bold text-[10px] px-2 py-1 rounded">EP ${e}</span>
+                            <input type="text" value="${eps[e].link}" oninput="formState.seasons[${s}].episodes[${e}].link = this.value" placeholder="URL ou Iframe" class="flex-1 bg-transparent border-b border-white/10 text-xs focus:outline-none focus:border-amber-500 text-white font-mono py-1">
+                            <button onclick="window.removeEp(${s}, ${e})" class="text-red-500/50 hover:text-red-500 bg-red-500/10 p-1.5 rounded"><i class="ph-bold ph-x"></i></button>
+                        </div>
+                        <label class="flex items-center gap-2 text-[10px] text-gray-400 cursor-pointer w-max pl-1"><input type="checkbox" ${eps[e].legendado ? 'checked' : ''} onchange="formState.seasons[${s}].episodes[${e}].legendado = this.checked" class="accent-amber-500 w-3 h-3"> Episódio Legendado</label>
+                    </div>
+                `).join('');
+
+                return `<div class="border border-white/5 rounded-xl overflow-hidden bg-[#1c1c1c] flex flex-col"><div class="bg-black/20 p-4 flex justify-between items-center border-b border-white/5"><h5 class="font-bold text-white text-base">Temporada ${s}</h5><button onclick="window.removeSeason(${s})" class="text-xs bg-red-500/10 text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition-colors">Remover</button></div><div class="p-4 flex flex-col gap-4"><div class="flex flex-col gap-2"><label class="text-[11px] text-gray-400 font-bold uppercase tracking-wide">Ações Rápidas</label><div class="flex gap-2"><button onclick="window.abrirModalMassa(${s})" class="flex-1 bg-amber-500/20 text-amber-500 text-xs py-2 rounded-lg font-bold hover:bg-amber-500 hover:text-black transition-colors">Colar Em Massa</button><button onclick="window.addUmEp(${s})" class="px-4 border border-white/10 text-xs rounded-lg hover:bg-white/5">+ 1 Ep Manual</button></div><div class="flex gap-2"><input type="number" id="qtd-ep-${s}" placeholder="Ex: 10" class="w-1/3 bg-[#0c0c0c] border border-white/10 rounded-lg p-2 text-xs focus:outline-none focus:border-white/30 text-center"><button onclick="window.gerarEps(${s})" class="flex-1 border border-white/10 text-xs rounded-lg hover:bg-white/5">Gerar Caixas Vazias</button></div></div><div class="border-t border-white/5 pt-4 flex flex-col">${epsHtml}</div></div></div>`;
+            }).join('');
+        }
+
+        window.gerarEps = (s) => { const q = parseInt(document.getElementById(`qtd-ep-${s}`).value); if(!q) return; for(let i=1;i<=q;i++) if(!formState.seasons[s].episodes[i]) formState.seasons[s].episodes[i] = {link:'', legendado:false}; renderSeasons(); };
+        window.addUmEp = (s) => { let eps = Object.keys(formState.seasons[s].episodes).map(Number); let next = 1; while(eps.includes(next)) next++; formState.seasons[s].episodes[next] = {link:'', legendado:false}; renderSeasons(); };
+        window.removeEp = (s, e) => { delete formState.seasons[s].episodes[e]; renderSeasons(); };
+
+        // ==========================================
+        // MODAL EM MASSA
+        // ==========================================
+        let temporadaMassaAtiva = null;
+        const txtMassa = document.getElementById('textarea-em-massa');
+        const prevMassa = document.getElementById('massa-preview-list');
+
+        window.abrirModalMassa = (sNumber) => {
+            temporadaMassaAtiva = sNumber;
+            txtMassa.value = ''; prevMassa.innerHTML = 'Cole os links acima para visualizar...';
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-em-massa').classList.remove('hidden');
+            document.getElementById('modal-preview').classList.add('hidden');
+        };
+
+        window.fecharModal = () => { document.getElementById('modal-overlay').classList.add('hidden'); temporadaMassaAtiva = null; };
+
+        txtMassa.addEventListener('input', () => {
+            const lines = txtMassa.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if(lines.length === 0) { prevMassa.innerHTML = 'Cole os links acima para visualizar...'; return; }
+            let eps = Object.keys(formState.seasons[temporadaMassaAtiva].episodes).map(Number);
+            let start = eps.length > 0 ? Math.max(...eps) + 1 : 1;
+            prevMassa.innerHTML = lines.map((l, i) => `<div class="flex gap-2 items-center py-1 border-b border-white/5 last:border-0"><span class="bg-amber-500/20 text-amber-500 font-bold px-1.5 rounded min-w-[35px] text-center">EP ${start + i}</span><span class="truncate flex-1">${l.replace(/</g, "&lt;")}</span></div>`).join('');
+        });
+
+        document.getElementById('btn-confirmar-massa').onclick = () => {
+            const lines = txtMassa.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if(lines.length > 0 && temporadaMassaAtiva) {
+                let eps = Object.keys(formState.seasons[temporadaMassaAtiva].episodes).map(Number);
+                let start = eps.length > 0 ? Math.max(...eps) + 1 : 1;
+                lines.forEach((l, idx) => { formState.seasons[temporadaMassaAtiva].episodes[start + idx] = { link: l, legendado: false }; });
+                renderSeasons();
+                window.showToast(`${lines.length} episódios gerados!`, 'success');
+            }
+            window.fecharModal();
+        };
+
+        // ==========================================
+        // PREVIEW E PUBLICAÇÃO (FIREBASE)
+        // ==========================================
+        window.abrirPreview = () => {
+            if(!formState.title) { window.showToast('Título é obrigatório!', 'error'); return; }
+            if(formState.type === 'movie' && formState.links.length === 0) { window.showToast('Filme precisa de link!', 'error'); return; }
+            if(formState.type === 'tv' && Object.keys(formState.seasons).length === 0) { window.showToast('Série precisa de temporada!', 'error'); return; }
+
+            const prev = document.getElementById('preview-content');
+            let infoMedia = formState.type === 'movie' ? `<div class="mt-2 text-xs"><strong class="text-amber-500">${formState.links.length} Opções de Vídeo</strong> prontas.</div>` : (() => { let t = Object.keys(formState.seasons).length, e = 0; Object.values(formState.seasons).forEach(s => e += Object.keys(s.episodes).length); return `<div class="mt-2 text-xs"><strong class="text-blue-500">${t} Temporada(s)</strong> | <strong class="text-amber-500">${e} Episódio(s)</strong></div>`; })();
+
+            prev.innerHTML = `<div class="flex gap-4"><img src="${formState.image}" class="w-20 rounded shadow"><div class="flex flex-col"><h4 class="font-bold text-lg leading-tight mb-1 text-white">${formState.title}</h4><span class="text-xs text-gray-500 mb-1">${formState.year} • ${formState.type === 'movie' ? 'Filme' : 'Série'}</span><div class="flex gap-1 flex-wrap">${formState.genres.slice(0,3).map(g=>`<span class="bg-white/10 px-1.5 rounded text-[9px]">${g}</span>`).join('')}</div>${infoMedia}</div></div>`;
+
+            document.getElementById('modal-em-massa').classList.add('hidden');
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-preview').classList.remove('hidden');
+        };
+
+        window.confirmarPublicacao = async () => {
+            if(!currentUser) return window.showToast('Erro: Não autenticado.', 'error');
+            window.fecharModal();
+            window.showToast(modoFormulario === 'novo' ? 'Publicando...' : 'Salvando alterações...', 'info');
+            
+            try {
+                formState.lastUpdated = Date.now();
+                if(modoFormulario === 'novo') formState.createdAt = Date.now();
+
+                const refDoc = modoFormulario === 'novo' ? doc(collection(db, 'artifacts', getAppId(), 'users', currentUser.uid, 'conteudos')) : doc(db, 'artifacts', getAppId(), 'users', currentUser.uid, 'conteudos', docIdEmEdicao);
+                
+                if(modoFormulario === 'novo') { await addDoc(collection(db, 'artifacts', getAppId(), 'users', currentUser.uid, 'conteudos'), formState); }
+                else { await updateDoc(refDoc, formState); }
+
+                window.showToast('Sucesso!', 'success');
+                setTimeout(() => window.fecharFormulario(), 1000);
+            } catch (error) {
+                console.error(error);
+                window.showToast('Erro ao atualizar.', 'error');
+            }
+        };
+
+        // ==========================================
+        // LÓGICA DE CADASTRO DE ADM (CORREÇÃO DE CAMINHOS)
+        // ==========================================
+        window.criarAdministrador = async () => {
+            if(!currentUser) return window.showToast('Você precisa estar conectado!', 'error');
+
+            const nome = document.getElementById('cad-nome').value.trim();
+            const email = document.getElementById('cad-email').value.trim();
+            const senha = document.getElementById('cad-senha').value;
+
+            if(!nome || !email || !senha) return window.showToast('Preencha todos os campos!', 'error');
+            if(senha.length < 6) return window.showToast('A senha deve ter pelo menos 6 caracteres.', 'error');
+
+            const btn = document.getElementById('btn-criar-adm');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Criando...';
+            btn.disabled = true;
+
+            try {
+                const newAdmId = 'adm_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+                
+                // 1. Cria a conta no Firebase Authentication usando um App Secundário (para não deslogar você)
+                const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+                const secondaryAuth = getAuth(secondaryApp);
+                const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
+                const novoUid = userCredential.user.uid;
+                await signOut(secondaryAuth); // Desloga e destrói o rastro do app secundário
+
+                // 2. Salva os dados visuais no banco de dados vinculados ao novo UID real
+                await setDoc(doc(db, 'artifacts', getAppId(), 'public', 'data', 'admins', novoUid), {
+                    nome: nome,
+                    email: email,
+                    role: 'admin',
+                    createdAt: Date.now(),
+                    createdBy: currentUser.uid,
+                    uid: novoUid
+                });
+
+                document.getElementById('cad-id-gerado').value = novoUid;
+                document.getElementById('cad-sucesso').classList.remove('hidden');
+                document.getElementById('cad-sucesso').classList.add('flex');
+                btn.classList.add('hidden');
+
+                window.showToast('Conta Auth e Administrador criados com sucesso!', 'success');
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/email-already-in-use') {
+                    window.showToast('Erro: Este e-mail já está cadastrado.', 'error');
+                } else {
+                    window.showToast('Erro ao criar Auth ou permissão negada no Firestore.', 'error');
+                }
+                btn.innerHTML = 'Criar Administrador';
+                btn.disabled = false;
+            }
+        };
+
+        window.copiarIdAdm = () => {
+            const inputId = document.getElementById('cad-id-gerado');
+            inputId.select(); inputId.setSelectionRange(0, 99999);
+            try { document.execCommand('copy'); window.showToast('ID copiado com sucesso!', 'info'); } 
+            catch (err) { window.showToast('Falha ao copiar.', 'error'); }
+        };
+
+    </script>
+</body>
+</html>
