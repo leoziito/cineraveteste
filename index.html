@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CINERAVE ADM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; border: none; outline: none; -webkit-tap-highlight-color: transparent; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background-color: #000000; color: #ffffff; overflow: hidden; width: 100vw; height: 100vh; }
+        header { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background-color: transparent; display: flex; justify-content: center; align-items: center; z-index: 100; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.4s ease, backdrop-filter 0.4s ease; }
+        header.scrolled { background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        header.hide { transform: translateY(-100%); }
+        .logo { font-size: 22px; font-weight: 900; letter-spacing: 5px; text-transform: uppercase; background: linear-gradient(135deg, #a8a8a8 0%, #ffffff 40%, #e0e0e0 60%, #ffffff 80%, #a8a8a8 100%); background-size: 200% auto; color: #ffffff; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; cursor: pointer; user-select: none; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); display: flex; align-items: center; gap: 8px;}
+        .logo-adm-tag { font-size: 10px; color: #ffbb00; font-weight: 900; border: 1px solid #ffbb00; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px; -webkit-text-fill-color: #ffbb00; }
+        main { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: transparent; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+        .tab-content { display: none; width: 100%; padding-bottom: 220px; min-height: 100vh; padding-top: 80px; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: rgba(5, 5, 5, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-around; align-items: center; z-index: 100; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        nav.hide { transform: translateY(100%); }
+        .menu-item { cursor: pointer; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%; position: relative; }
+        .menu-item svg { width: 24px; height: 24px; fill: #666666; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .menu-item.active svg { fill: #ffffff; transform: scale(1.2); filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+        
+        .hdcam-badge { background-color: #ffbb00; color: #000000; font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px; text-transform: uppercase; display: inline-block; }
+.vertical-badge-adm { background-color: #a64aff; color: #ffffff; font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px; text-transform: uppercase; display: inline-block; margin-left: 5px; }
+        
+        #aba-perfil.active { display: flex; flex-direction: column; align-items: center; }
+        .profile-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; padding: 0 20px; }
+        .hidden { display: none !important; }
+        .auth-form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        .auth-title { font-size: 22px; font-weight: 800; text-align: center; letter-spacing: -0.5px; margin-bottom: 10px; }
+        .input-group { position: relative; width: 100%; }
+        .input-base { width: 100%; background-color: transparent; color: #ffffff; padding: 16px; border-radius: 12px; font-size: 15px; border: 1px solid #2a2a2a; transition: all 0.3s ease; }
+        .input-base::placeholder { color: #666666; }
+        .input-base:focus { border-color: #888888; background-color: rgba(255, 255, 255, 0.02); }
+        input[type="datetime-local"].input-base { color-scheme: dark; }
+        textarea.input-base { resize: vertical; min-height: 120px; }
+        .password-toggle { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer; width: 20px; height: 20px; fill: #666666; transition: fill 0.3s ease; }
+        .password-toggle:hover { fill: #ffffff; }
+        .btn-primary { width: 100%; padding: 16px; background-color: #ffffff; color: #000000; font-size: 15px; font-weight: 800; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .user-info-box { width: 100%; background-color: transparent; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px;}
+        .user-info-wrapper { position: relative; display: inline-block; margin-bottom: 10px; }
+        .user-info-bubble { width: 120px; height: 120px; border-radius: 50%; border: 2px solid #ffffff; overflow: hidden; box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .user-info-bubble img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .user-name-wrapper { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .user-name { font-size: 26px; font-weight: 800; text-align: center; letter-spacing: -0.5px; }
+
+        .btn-danger { background-color: transparent; color: #ff4a4a; border: 1px solid #2a2a2a; width: 100%; padding: 16px; font-size: 14px; font-weight: 800; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; margin-top: 20px; }
+        .btn-danger:hover { border-color: #ff4a4a; background-color: rgba(255, 74, 74, 0.05); }
+        .btn-danger:active { transform: scale(0.97); }
+        .btn-admin { background-color: #111111; color: #ffffff; border: 1px solid #333333; width: 100%; padding: 16px; font-size: 14px; font-weight: 800; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; margin-top: 5px;}
+        .btn-admin:active { transform: scale(0.97); background-color: #1a1a1a; }
+
+        .admin-header { display: flex; align-items: center; padding: 0 20px 20px 20px; background-color: transparent; border-bottom: 1px solid #1a1a1a; gap: 15px; margin-bottom: 25px; }
+        .admin-header button { background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .admin-header svg { width: 24px; height: 24px; fill: #ffffff; }
+        .admin-header span { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #ffffff; flex-grow: 1; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 20px; }
+        .admin-card { background-color: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 16px; aspect-ratio: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align:center; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease; color: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); padding:10px; gap:8px;}
+        .admin-card:active { transform: scale(0.95); border-color: #555555; }
+        
+        .admin-section { padding: 0 20px 220px 20px; display: flex; flex-direction: column; gap: 18px; }
+        
+        .type-toggle { display: flex; background-color: #0a0a0a; border-radius: 14px; border: 1px solid #2a2a2a; overflow: hidden; margin-bottom: 10px; }
+        .type-toggle button { flex: 1; padding: 14px; background: transparent; color: #666666; font-weight: 800; cursor: pointer; transition: all 0.3s ease; font-size: 14px; }
+        .type-toggle button.active { background-color: #ffffff; color: #000000; }
+        .search-results { position: absolute; top: 100%; left: 0; width: 100%; background-color: #0a0a0a; border: 1px solid #2a2a2a; border-top: none; border-radius: 0 0 12px 12px; max-height: 300px; overflow-y: auto; z-index: 10; }
+        .search-item { display: flex; align-items: center; padding: 12px; gap: 12px; cursor: pointer; border-bottom: 1px solid #1a1a1a; transition: background-color 0.2s ease; }
+        .search-item:hover { background-color: #111111; }
+        .search-item img { width: 45px; height: 65px; border-radius: 6px; object-fit: cover; }
+        .search-item-info { display: flex; flex-direction: column; }
+        .search-item-title { font-size: 15px; font-weight: 700; }
+        .search-item-year { font-size: 13px; color: #888888; margin-top: 2px; }
+        .poster-preview { width: 100%; max-width: 220px; border-radius: 16px; margin: 10px auto; display: block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .section-title { font-size: 15px; font-weight: 800; color: #888888; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .badges-container { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+        .badge { padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; border: 1px solid #333333; color: #888888; background: #050505; transition: all 0.3s ease; }
+        .badge.active { background: #ffffff; color: #000000; border-color: #ffffff; }
+        .badge.premium-mode { border-color: #ffaa00; color: #ffaa00; }
+        .badge.premium-mode.active { background: linear-gradient(45deg, #ffaa00, #ffdd00); color: #000; border-color: #ffaa00; }
+        
+        .dynamic-link-input { margin-top: 12px; }
+        .season-block { background-color: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 0; margin-bottom: 18px; position: relative; overflow: hidden; }
+        .season-header { display: flex; justify-content: space-between; align-items: center; padding: 18px; background-color: #111; cursor: pointer; font-weight: 900; font-size: 16px; border-bottom: 1px solid #2a2a2a; }
+        .season-header-actions { display: flex; align-items: center; gap: 10px; }
+        .season-content { padding: 18px; }
+        .episode-block { background-color: #000000; border: 1px solid #222222; border-radius: 12px; padding: 15px; margin-top: 12px; position: relative; }
+        .add-ep-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .btn-small { padding: 10px 16px; background-color: #111111; border: 1px solid #333333; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+        .btn-small:active { transform: scale(0.95); background-color: #222222; }
+        
+        /* Modais Customizados */
+        .custom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); z-index: 9000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); visibility: hidden; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .custom-modal.show { visibility: visible; opacity: 1; pointer-events: auto; }
+        .modal-content { background-color: #111111; padding: 26px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-height: 85vh; overflow-y: auto; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .custom-modal.show .modal-content { transform: scale(1); }
+        .modal-title { font-size: 20px; font-weight: 800; text-align: center; letter-spacing: -0.5px; color: #fff; }
+        .modal-text { font-size: 14px; color: #aaaaaa; text-align: center; line-height: 1.5; word-wrap: break-word; }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 10px; }
+        .modal-buttons button { flex: 1; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; transition: all 0.2s ease; border: none; }
+        .btn-cancel { background-color: #222; color: #ffffff; border: 1px solid #333 !important; }
+        .btn-cancel:active { background-color: #333; transform: scale(0.96); }
+        .btn-confirm { background-color: #ffffff; color: #000000; }
+        .btn-confirm:active { background-color: #ddd; transform: scale(0.96); }
+        .btn-danger-confirm { background-color: #ff4a4a; color: #ffffff; }
+        .btn-danger-confirm:active { background-color: #e60000; transform: scale(0.96); }
+
+        .edit-list { display: flex; flex-direction: column; gap: 16px; }
+        .edit-item { display: flex; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 12px; gap: 15px; align-items: center; position: relative;}
+        .edit-item img { width: 65px; height: 95px; border-radius: 10px; object-fit: cover; }
+        .edit-item-info { flex-grow: 1; }
+        .edit-item-title { font-size: 16px; font-weight: 800; }
+        .edit-item-type { font-size: 13px; color: #888888; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        .edit-actions { display: flex; flex-direction: column; gap: 8px; }
+        .edit-actions button { background: #1a1a1a; border: 1px solid #333333; width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s ease; }
+        .edit-actions button:active { transform: scale(0.9); }
+        .edit-actions button svg { width: 18px; height: 18px; fill: #ffffff; }
+        .edit-actions button.del-btn svg { fill: #ff4a4a; }
+        .edit-actions button.draft-btn svg { fill: #ffbb00; }
+        .draft-badge { position: absolute; top: -8px; left: -8px; background: #ffbb00; color: #000; font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 6px; z-index: 2; text-transform: uppercase; }
+
+        .btn-remove-season { background-color: transparent; color: #ff4a4a; border: 1px solid #ff4a4a; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: transform 0.2s; }
+        .btn-remove-season:active { transform: scale(0.95); }
+        .btn-remove-ep { position: absolute; top: 12px; right: 12px; background-color: #ff4a4a; color: #ffffff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: transform 0.2s; }
+        .btn-remove-ep:active { transform: scale(0.9); }
+
+        #toast-container { position: fixed; top: 80px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 999999; pointer-events: none; gap: 10px; }
+        .toast-custom { background-color: #111; color: #fff; padding: 14px 20px; border-radius: 30px; font-size: 13px; font-weight: 800; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; max-width: 90%; }
+        .toast-custom.show { opacity: 1; transform: translateY(0); }
+        .toast-custom.success { border-color: #00c851; color: #00c851; }
+        .toast-custom.error { border-color: #ff4a4a; color: #ff4a4a; }
+
+        /* Batch UI check */
+        .batch-select-cb { width: 22px; height: 22px; margin-right: 15px; accent-color: #ffaa00; cursor: pointer; }
+        
+        /* Checker Logs */
+        .custom-link-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-top: 10px; position: relative; display: flex; flex-direction: column; gap: 10px; }
+        .custom-link-box .btn-remove-link { position: absolute; top: 10px; right: 10px; background: #ff4a4a; color: #fff; border: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: 900; }
+        .custom-link-options { display: flex; gap: 15px; font-size: 12px; font-weight: 700; color: #aaa; align-items: center; flex-wrap: wrap; }
+        .custom-link-options input[type="checkbox"] { accent-color: #ffaa00; width: 16px; height: 16px; cursor: pointer; }
+        .btn-filter-draft { background: #1a1a1a; color: #ffaa00; border: 1px solid #ffaa00; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-filter-draft.active { background: #ffaa00; color: #000; }
+.checker-log-item { background: #111; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 13px; color: #fff; border-left: 4px solid #ff4a4a; display: flex; flex-direction: column; gap: 6px; }
+    </style>
+</head>
+<body data-version="4.1">
+
+    <header id="main-header">
+        <div class="logo" id="main-logo">CINERAVE <span class="logo-adm-tag">ADM</span></div>
+    </header>
+
+    <div id="toast-container"></div>
+
+    <!-- Modais Base -->
+    <div id="password-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title">Acesso Restrito</div>
+            <div class="modal-text">Insira a senha do administrador.</div>
+            <input type="password" id="admin-password-input" class="input-base" placeholder="Senha">
+            <div class="modal-buttons">
+                <button onclick="closePasswordModal()" class="btn-cancel">Cancelar</button>
+                <button onclick="checkAdminPassword()" class="btn-confirm">Acessar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logout-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title">Sair da Conta</div>
+            <div class="modal-text">Tem certeza que deseja desconectar sua conta do CINERAVE?</div>
+            <div class="modal-buttons">
+                <button onclick="closeLogoutModal()" class="btn-cancel">Cancelar</button>
+                <button onclick="confirmLogout()" class="btn-danger-confirm">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="preview-title">Resumo</div>
+            <div class="modal-text" id="preview-content" style="text-align: left; font-family: monospace; font-size: 13px; max-height: 250px; overflow-y: auto; background: #000000; padding: 15px; border-radius: 12px; border: 1px solid #222;"></div>
+            <div class="modal-buttons">
+                <button onclick="closePreviewModal()" class="btn-cancel">Revisar</button>
+                <button onclick="confirmAction()" id="btn-modal-confirm" class="btn-confirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title">Excluir Permanente</div>
+            <div class="modal-text">Esta ação é irreversível. Deseja deletar?</div>
+            <div class="modal-buttons">
+                <button onclick="closeDeleteModal()" class="btn-cancel">Cancelar</button>
+                <button onclick="confirmDelete()" class="btn-danger-confirm">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar em Massa -->
+    <div id="bulk-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title">Adicionar em Massa</div>
+            <div class="modal-text">Cole os links abaixo (um por linha). Os episódios serão enumerados automaticamente.</div>
+            <textarea id="bulk-links" class="input-base" placeholder="Cole os links aqui..." onblur="formatBulkLinks()" style="min-height: 250px; white-space: pre-wrap; word-break: break-all; font-size: 11px; line-height: 1.6;"></textarea>
+            <div class="modal-buttons">
+                <button onclick="closeBulkModal()" class="btn-cancel">Cancelar</button>
+                <button onclick="confirmBulkAdd()" class="btn-confirm">Gerar Episódios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aviso Duplicatas -->
+    <div id="duplicate-warning-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-title" style="color: #ff4a4a;">Links Duplicados Encontrados!</div>
+            <div class="modal-text">A publicação foi bloqueada pois os seguintes links já estão vinculados a outros conteúdos no sistema:</div>
+            <div id="duplicate-warning-content" class="modal-text" style="text-align: left; font-family: monospace; font-size: 11px; max-height: 200px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; color: #ffaa00;"></div>
+            <div class="modal-buttons">
+                <button onclick="closeDuplicateWarningModal()" class="btn-cancel">Revisar Meus Links</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN TABS ÚNICAS -->
+    <main id="main-container">
+
+        <section id="aba-perfil" class="tab-content active">
+            <div id="auth-section" class="profile-container hidden">
+                <form id="login-form" class="auth-form">
+                    <div class="auth-title">Entrar</div>
+                    <div class="input-group">
+                        <input type="email" id="login-email" class="input-base" placeholder="E-mail" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" class="input-base" placeholder="Senha" required>
+                        <svg class="password-toggle" viewBox="0 0 24 24" onclick="togglePassword('login-password')">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"/>
+                        </svg>
+                    </div>
+                    <button type="submit" id="btn-login" class="btn-primary">Acessar Conta</button>
+                </form>
+            </div>
+
+            <div id="logged-section" class="profile-container hidden">
+                <div class="user-info-box">
+                    <div class="user-info-wrapper">
+                        <div class="user-info-bubble">
+                            <img id="logged-user-image" src="" alt="">
+                        </div>
+                    </div>
+                    <div class="user-name-wrapper">
+                        <div id="logged-user-name" class="user-name"></div>
+                    </div>
+                    
+                    <button id="btn-painel-adm" class="btn-admin hidden" onclick="openAdminMenu()">Painel Administrativo</button>
+                    <button onclick="openLogoutModal()" class="btn-danger">Desconectar</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="aba-admin" class="tab-content">
+            <div class="admin-header">
+                <button onclick="closeAdminPanel()">
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z"/></svg>
+                </button>
+                <span id="admin-main-title">GERENCIAMENTO</span>
+            </div>
+
+            <div id="admin-menu" class="admin-grid">
+                <div class="admin-card" onclick="openAdminPublicar()">PUBLICAR <br> CONTEÚDO</div>
+                <div class="admin-card" onclick="openAdminEditar()">EDITAR <br> CONTEÚDO</div>
+<div class="admin-card" onclick="adminSincronizarCatalogo()" style="border-color:#00c851; color:#00c851;">SINCRONIZAR <br> CATÁLOGO</div>
+                <div class="admin-card" onclick="openAdminReports()">VER <br> RELATÓRIOS</div>
+                <div class="admin-card" onclick="openAdminChecker()">FERRAMENTAS <br> DE LINKS</div>
+                <div class="admin-card" onclick="openAdminEnviarPremium()" style="border-color:#ffaa00; color:#ffaa00;">ENVIAR <br> PREMIUM</div>
+                <div class="admin-card" onclick="openAdminPremiumAtivos()" style="border-color:#ffaa00; color:#ffaa00;">PREMIUM <br> ATIVOS</div>
+                <div class="admin-card" onclick="openAdminWatchParties()" style="border-color:#00c851; color:#00c851;">SALAS <br> WATCH PARTY</div>
+            </div>
+
+            <div id="admin-publicar" class="admin-section hidden">
+                <div class="type-toggle">
+                    <button id="toggle-movie" class="active" onclick="setPublishType('movie')">Filme</button>
+                    <button id="toggle-tv" onclick="setPublishType('tv')">Série</button>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="tmdb-search" class="input-base" placeholder="Buscar no TMDB..." autocomplete="off">
+                    <div id="tmdb-results" class="search-results hidden"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="pub-custom-poster" class="input-base" placeholder="URL da Imagem do Pôster (Opcional)" style="margin-top: 10px;">
+                </div>
+
+                <img id="pub-poster-preview" class="poster-preview hidden" src="">
+                <input type="hidden" id="pub-tmdb-id">
+                <input type="hidden" id="pub-poster">
+                <input type="hidden" id="pub-backdrop">
+                <input type="hidden" id="pub-collection">
+                <input type="hidden" id="pub-original-title">
+                <input type="hidden" id="pub-clear-logo">
+                <input type="hidden" id="pub-latest-thumb">
+
+                <input type="text" id="pub-title" class="input-base" placeholder="Nome da Obra">
+                <textarea id="pub-synopsis" class="input-base" placeholder="Sinopse"></textarea>
+                <input type="text" id="pub-actors" class="input-base" placeholder="Atores">
+                <input type="text" id="pub-streaming" class="input-base" placeholder="Streaming Disponível">
+                <input type="text" id="pub-genres" class="input-base" placeholder="Gêneros">
+                <input type="text" id="pub-year" class="input-base" placeholder="Ano">
+                
+                <div class="section-title">Qualidade e Acesso</div>
+                <div class="badges-container">
+                    <div class="badge hdcam" id="badge-hdcam" onclick="toggleHDCAM()">HDCAM</div>
+                    <div class="badge premium-mode" id="badge-global-premium" onclick="toggleGlobalPremium()">Conteúdo Premium</div>
+<div class="badge" id="badge-vertical" onclick="document.getElementById('badge-vertical').classList.toggle('active')" style="border-color: #a64aff; color: #a64aff;">Formato Vertical (Shorts)</div>
+                </div>
+
+                <div class="section-title">Programar Lançamento da Obra</div>
+                <input type="datetime-local" id="pub-root-schedule" class="input-base" style="margin-top: 8px;">
+
+                <div id="pub-movie-links">
+                    <div class="section-title">Links do Filme</div>
+                    <input type="text" id="pub-movie-main" class="input-base" placeholder="Servidor Principal (Qualquer link: embed, mp4, etc)" style="margin-top: 10px;">
+                    <div class="badges-container">
+                        <div class="badge" id="badge-movie-drive" onclick="toggleMovieBadge('drive')">Drive</div>
+                        <div class="badge" id="badge-movie-telegram" onclick="toggleMovieBadge('telegram')">Telegram</div>
+                    </div>
+                    <input type="text" id="input-movie-drive" class="input-base dynamic-link-input hidden" placeholder="Link Drive">
+                    <input type="text" id="input-movie-telegram" class="input-base dynamic-link-input hidden" placeholder="Link Telegram">
+                </div>
+<div class="section-title" style="margin-top: 20px;">Servidores Adicionais Customizados</div>
+                    <div id="custom-links-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    <button class="btn-small" onclick="addCustomServerBox()" style="width: 100%; margin-top: 10px; background: #1a1a1a; color: #fff; border: 1px dashed #444;">+ Adicionar Caixinha de Servidor</button>
+
+                <div id="pub-tv-links" class="hidden">
+                    <div class="section-title">Auto-Preenchimento Sequencial</div>
+                    <div style="background:#0a0a0a; border:1px solid #2a2a2a; border-radius:16px; padding:20px; margin-top:10px; margin-bottom:20px;">
+                        <div id="seq-generator-list" style="display:flex; flex-direction:column; gap:15px; max-height:400px; overflow-y:auto; padding-right:5px; scrollbar-width:thin;"></div>
+                        <div style="display:flex; gap:10px; margin-top:15px; flex-wrap: wrap;">
+                            <button class="btn-small" style="flex:1; background:#1a1a1a; color:#fff;" onclick="addSeqRow()">+ Adicionar Lote (Temporada)</button>
+                            <button class="btn-small" style="flex:1; background:#00c851; color:#000; font-weight:900;" onclick="processSeqGenerator()">Gerar e Preencher Tudo</button>
+                            <button class="btn-small" style="background:#ff4a4a; color:#fff;" onclick="resetSeqGenerator()">Limpar Tudo</button>
+                        </div>
+                    </div>
+                    <div class="section-title">Temporadas e Episódios</div>
+                    <div id="seasons-container"></div>
+                    <div id="missing-seasons-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;"></div>
+                </div>
+
+                <button class="btn-primary" onclick="preparePublish()" id="btn-final-publish" style="margin-top: 40px;">Publicar Conteúdo</button>
+            </div>
+
+            <div id="admin-editar" class="admin-section hidden">
+                <div class="input-group" style="margin-bottom: 10px; display: flex; gap: 10px;">
+                    <input type="text" id="edit-search" class="input-base" placeholder="Buscar conteúdo..." oninput="filterEditList()" style="flex: 1;">
+                    <button id="btn-toggle-drafts" class="btn-filter-draft" onclick="toggleDraftsOnly()">Rascunhos</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; background: #111; padding: 12px; border-radius: 12px; border: 1px solid #2a2a2a;">
+                    <div style="font-size: 13px; font-weight:bold; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="select-all-batch" onchange="toggleSelectAll()" style="width:18px; height:18px; accent-color:#ffaa00;"> 
+                        Selecionar Todos
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-small" style="background:#ffaa00; color:#000; border:none;" onclick="applyBatchPremium(true)">+ Premium</button>
+                        <button class="btn-small" onclick="applyBatchPremium(false)">- Premium</button>
+                    </div>
+                </div>
+                <div id="edit-list-container" class="edit-list"></div>
+            </div>
+
+            <div id="admin-relatorios" class="admin-section hidden">
+                <div id="report-list-container" class="edit-list"></div>
+            </div>
+            
+            <div id="admin-checker" class="admin-section hidden">
+                <div style="background: #111; padding: 20px; border-radius: 16px; border: 1px solid #333; text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 14px; color: #aaa; margin-bottom: 15px; line-height: 1.5;">Utilize as ferramentas abaixo para auditar sua base de dados. O verificador de links usa múltiplas camadas e aguarda até 20 segundos por servidor. O verificador de duplicatas cruza todos os dados para achar links idênticos em lugares diferentes.</div>
+                    <div id="checker-status" style="font-weight: 800; font-size: 16px; color: #ffaa00; margin-bottom: 15px;">Aguardando início...</div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button class="btn-primary" id="btn-start-checker" onclick="startLinkChecker()">Verificar Links Quebrados (404)</button>
+                        <button class="btn-primary" id="btn-start-duplicate-checker" style="background:#1a1a1a; color:#fff; border:1px solid #333; margin-top:0;" onclick="startDuplicateChecker()">Procurar Links Duplicados</button>
+<button class="btn-primary" style="background:#ff4a4a; color:#fff; border:1px solid #cc0000; margin-top:0;" onclick="openClearChatModal()">Limpar Chat Global (Apagar Tudo)</button>
+                    </div>
+                </div>
+                <div class="section-title">Logs do Sistema</div>
+                <div id="checker-log" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
+            </div>
+
+            <div id="admin-enviar-premium" class="admin-section hidden">
+                <div class="input-group">
+                    <input type="text" id="input-adm-uid" class="input-base" placeholder="Cole o UID do Usuário" onblur="fetchUserForPremium()">
+                </div>
+                <div id="adm-user-preview" class="hidden" style="background:#111; padding:15px; border-radius:12px; border:1px solid #333; margin-top:10px; display:flex; align-items:center; gap:15px;">
+                    <img id="adm-user-img" src="" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <div id="adm-user-name" style="font-weight:800; font-size:15px; color:#fff;"></div>
+                        <div id="adm-user-current-plan" style="font-size:12px; color:#ffaa00; margin-top:4px;"></div>
+                    </div>
+                </div>
+                
+                <div id="adm-plan-selection" class="hidden">
+                    <div class="section-title" style="margin-bottom:10px;">Selecione o Plano</div>
+                    <div class="type-toggle" style="flex-direction:column; gap:5px; background:transparent; border:none;">
+                        <button class="adm-plan-btn" onclick="selectAdmPlan('vitalicio', this)" style="background:#111; border:1px solid #333; border-radius:8px; color:#fff;">Vitalício</button>
+                        <button class="adm-plan-btn" onclick="selectAdmPlan('6_meses', this)" style="background:#111; border:1px solid #333; border-radius:8px; color:#fff;">6 Meses</button>
+                        <button class="adm-plan-btn" onclick="selectAdmPlan('1_mes', this)" style="background:#111; border:1px solid #333; border-radius:8px; color:#fff;">1 Mês</button>
+                        <button class="adm-plan-btn" onclick="selectAdmPlan('10_dias', this)" style="background:#111; border:1px solid #333; border-radius:8px; color:#fff;">10 Dias</button>
+                        <button class="adm-plan-btn" onclick="selectAdmPlan('manual', this)" style="background:#111; border:1px solid #333; border-radius:8px; color:#fff;">Manual (Escolher Data)</button>
+                    </div>
+                    <input type="datetime-local" id="adm-manual-date" class="input-base hidden" style="margin-top:10px;">
+                    
+                    <button class="btn-primary" onclick="confirmSendPremium()" style="margin-top:20px; background: linear-gradient(45deg, #ffaa00, #ffdd00); border: none; box-shadow: 0 4px 15px rgba(255, 170, 0, 0.3);">ENVIAR PREMIUM AGORA</button>
+                </div>
+            </div>
+            
+            <div id="admin-premium-ativos" class="admin-section hidden">
+                <div id="active-premium-list" class="edit-list"></div>
+            </div>
+            
+            <div id="admin-watch-parties" class="admin-section hidden">
+                <div id="active-wp-list" class="edit-list"></div>
+            </div>
+        </section>
+        
+        <nav id="main-nav">
+            <div class="menu-item active" onclick="switchTab('aba-perfil', this)">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+            </div>
+        </nav>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeAuth, browserLocalPersistence, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { initializeFirestore, memoryLocalCache, collection, addDoc, doc, deleteDoc, updateDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getDatabase, ref, set, get, remove, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8ZvnbUXI24eHe1hcQ_jmzs3rw1Wx5yzk",
+            authDomain: "cinexrave.firebaseapp.com",
+            databaseURL: "https://cinexrave-default-rtdb.firebaseio.com",
+            projectId: "cinexrave",
+            storageBucket: "cinexrave.firebasestorage.app",
+            messagingSenderId: "237264799303",
+            appId: "1:237264799303:web:85eb8fb6b42120ca04d362"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = initializeAuth(app, { persistence: browserLocalPersistence });
+        const db = initializeFirestore(app, { localCache: memoryLocalCache() });
+const rtdb = getDatabase(app);
+        
+        const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMGY3ZTJjNDE0YjFlZmZmN2IwMDBhZTliNjgxZWQxYiIsIm5iZiI6MTc0OTMzNDk4Mi42MTUsInN1YiI6IjY4NDRiYmM2MWQ2YzRhNDc0ZWJiMmI3ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.RsV2Jfs-ud1Pw3PLx6DG2EjCmX00lp284qyXPL8_aGg";
+        const ADMIN_UID = 'eUwVMmizLXW4zgqSAm3twSq19eE3';
+
+        window.lastScrollTop = 0;
+        let logoClicks = 0;
+        let logoTimer;
+        let isAdminUnlocked = false;
+        let publishType = 'movie'; 
+        let isEditing = false;
+        let editingDocId = null;
+        
+        let seriesData = []; 
+        let allPublishedContent = [];
+        let docToDelete = null;
+
+        let unsubscribeContent = null;
+        
+        let pendingModalAction = null;
+        let pendingPublishData = null;
+        let currentBulkSeasonIndex = null;
+
+        let admTargetUser = null;
+        let admSelectedPlan = null;
+        
+        // Link Checker Vars
+        let isCheckingLinks = false;
+        let checkerQueue = [];
+// =======================================================
+        // FUNÇÃO EXCLUSIVA DO ADMIN (Sincronizador de Catálogo via RTDB)
+        // Salva tudo como uma String no Realtime Database usando a Memória Local
+        // =======================================================
+        window.adminSincronizarCatalogo = async function() {
+            showToast("Gerando Cache Leve...", "info");
+            const btn = event.currentTarget;
+            if (btn) { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
+            
+            try {
+                let catalogoArray = [];
+                allPublishedContent.forEach(item => {
+                    if (!item.isDraft) {
+                        // Remove arrays pesados (temporadas/links) e textos grandes para criar o Cache Leve
+                        const liteItem = {
+                            id: item.id, type: item.type, tmdbId: item.tmdbId,
+                            title: item.title, originalTitle: item.originalTitle,
+                            poster: item.poster, backdrop: item.backdrop,
+                            clearLogo: item.clearLogo, latestThumb: item.latestThumb,
+                            latestS: item.latestS, latestE: item.latestE, latestBadge: item.latestBadge,
+                            year: item.year, genres: item.genres, streaming: item.streaming,
+                            isVertical: item.isVertical, isGlobalPremium: item.isGlobalPremium, isHDCAM: item.isHDCAM,
+                            rootScheduleDate: item.rootScheduleDate, createdAt: item.createdAt,
+                            views: item.views || 0, likes: item.likes || 0, dislikes: item.dislikes || 0,
+                            collection: item.collection
+                        };
+                        catalogoArray.push(liteItem);
+                    }
+                });
+
+                catalogoArray.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                // Salva no novo node super leve
+                const jsonString = JSON.stringify(catalogoArray);
+                await set(ref(rtdb, 'public_cache/home_lite'), jsonString);
+                
+                showToast("Catálogo Otimizado Sincronizado!", "success");
+            } catch (e) {
+                console.error(e);
+                showToast("Erro ao gravar no RTDB.", "error");
+            } finally {
+                if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
+            }
+        };
+
+        function normalizeStr(str) { return str ? str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; }
+
+        document.getElementById('main-logo').addEventListener('click', () => {
+            logoClicks++;
+            clearTimeout(logoTimer);
+            if (logoClicks === 5) {
+                logoClicks = 0;
+                document.getElementById('password-modal').classList.add('show');
+                document.getElementById('admin-password-input').value = "";
+                document.getElementById('admin-password-input').focus();
+            }
+            logoTimer = setTimeout(() => { logoClicks = 0; }, 1500);
+        });
+
+        window.closePasswordModal = function() { document.getElementById('password-modal').classList.remove('show'); };
+        window.checkAdminPassword = function() {
+            if (document.getElementById('admin-password-input').value === "leoleo") {
+                isAdminUnlocked = true;
+                localStorage.setItem('cinerave_admin_unlocked', 'true');
+                closePasswordModal();
+                showToast("Acesso Liberado", "success");
+                if (auth.currentUser) document.getElementById('btn-painel-adm').classList.remove('hidden');
+            } else {
+                showToast("Senha incorreta", "error");
+            }
+        };
+
+        window.openAdminMenu = function() {
+            switchTab('aba-admin', null);
+            document.getElementById('admin-menu').classList.remove('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-watch-parties').classList.add('hidden');
+            document.getElementById('admin-main-title').innerText = "GERENCIAMENTO";
+        };
+
+        window.closeAdminPanel = function() {
+            if (!document.getElementById('admin-menu').classList.contains('hidden')) {
+                switchTab('aba-perfil', document.querySelectorAll('.menu-item')[0]);
+            } else {
+                openAdminMenu();
+            }
+        };
+
+        window.switchTab = function(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (element) element.classList.add('active');
+            
+            const mainContainer = document.getElementById('main-container');
+            if(mainContainer) mainContainer.scrollTo(0, 0);
+            
+            const header = document.getElementById('main-header');
+            if(header) header.classList.remove('hide');
+            
+            const nav = document.getElementById('main-nav');
+            if(nav) nav.classList.remove('hide');
+            
+            if (tabId === 'aba-admin' && !document.getElementById('admin-editar').classList.contains('hidden')) filterEditList();
+        };
+
+        const mainContainer = document.getElementById('main-container');
+        const header = document.getElementById('main-header');
+        const nav = document.getElementById('main-nav');
+        
+        if (mainContainer) {
+            mainContainer.addEventListener('scroll', function() {
+                let scrollTop = mainContainer.scrollTop;
+                if (scrollTop > 10 && header) header.classList.add('scrolled');
+                else if (header) header.classList.remove('scrolled');
+
+                if (scrollTop < 0) return;
+                if (Math.abs(window.lastScrollTop - scrollTop) <= 10) return;
+                if (scrollTop > window.lastScrollTop && scrollTop > 60) {
+                    if (header) header.classList.add('hide');
+                    if (nav) nav.classList.add('hide');
+                } else {
+                    if (header) header.classList.remove('hide');
+                    if (nav) nav.classList.remove('hide');
+                }
+                window.lastScrollTop = scrollTop;
+            });
+        }
+
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast-custom ${type}`;
+            const icon = type === 'success' 
+                ? `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#00c851;"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/></svg>`
+                : `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#ff4a4a;"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"/></svg>`;
+            
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        };
+
+        window.togglePassword = function(inputId) {
+            const input = document.getElementById(inputId);
+            if(input) input.type = input.type === "password" ? "text" : "password";
+        };
+
+        window.openLogoutModal = function() { document.getElementById('logout-modal').classList.add('show'); };
+        window.closeLogoutModal = function() { document.getElementById('logout-modal').classList.remove('show'); };
+        window.confirmLogout = async function() {
+            try {
+                await signOut(auth);
+                closeLogoutModal();
+                showToast("Sessão encerrada", "success");
+                switchTab('aba-perfil', document.querySelectorAll('.menu-item')[0]);
+                isAdminUnlocked = false;
+                localStorage.removeItem('cinerave_admin_unlocked');
+                document.getElementById('btn-painel-adm').classList.add('hidden');
+            } catch (error) { showToast("Erro ao sair", "error"); }
+        };
+
+        function clearFormsAuth() {
+            if(document.getElementById('login-form')) document.getElementById('login-form').reset();
+        }
+
+        function updateProfileUI(user) {
+            document.getElementById('logged-user-image').src = user.photoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z'/%3E%3C/svg%3E";
+            document.getElementById('logged-user-name').innerText = user.displayName || "Administrador";
+            
+            if (user.uid === ADMIN_UID || localStorage.getItem('cinerave_admin_unlocked') === 'true') {
+                isAdminUnlocked = true;
+                document.getElementById('btn-painel-adm').classList.remove('hidden');
+            } else {
+                isAdminUnlocked = false;
+                document.getElementById('btn-painel-adm').classList.add('hidden');
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('logged-section').classList.remove('hidden');
+                updateProfileUI(user);
+            } else {
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('logged-section').classList.add('hidden');
+                clearFormsAuth();
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            btn.disabled = true; btn.innerText = "Autenticando...";
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+                showToast("Acesso Liberado", "success");
+            } catch (error) { showToast("Credenciais inválidas", "error"); }
+            finally { btn.disabled = false; btn.innerText = "Acessar Conta"; }
+        });
+
+        // ADMIN SCREENS
+        window.openAdminPublicar = function() {
+            isEditing = false;
+            editingDocId = null;
+            clearPublishForm();
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.remove('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-main-title').innerText = "PUBLICAR CONTEÚDO";
+            document.getElementById('btn-final-publish').innerText = "Publicar Conteúdo";
+        };
+
+        window.openAdminEditar = function() {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-editar').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "EDITAR CONTEÚDO";
+            filterEditList();
+        };
+
+        window.openAdminReports = async function() {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "RELATÓRIOS E FEEDBACKS";
+            
+            const cont = document.getElementById('report-list-container');
+            cont.innerHTML = '<div class="skeleton" style="width:100%; height:100px;"></div>';
+            
+            try {
+                const snap = await getDocs(collection(db, "reports"));
+                let reports = [];
+                snap.forEach(d => reports.push({id: d.id, ...d.data()}));
+                reports.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                cont.innerHTML = '';
+                if(reports.length === 0) {
+                    cont.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Nenhum relatório encontrado.</div>';
+                    return;
+                }
+                
+                reports.forEach(rep => {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.background = '#111';
+                    div.style.border = '1px solid #333';
+                    div.style.borderRadius = '16px';
+                    div.style.padding = '15px';
+                    div.style.gap = '15px';
+                    div.style.alignItems = 'flex-start';
+                    
+                    const imgUrl = rep.contentPoster || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23222%22%3E%3Cpath d=%22M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z%22/%3E%3C/svg%3E';
+                    const userImg = rep.userPhoto || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23666%22%3E%3Cpath d=%22M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z%22/%3E%3C/svg%3E';
+                    
+                    div.innerHTML = `
+                        <img src="${imgUrl}" style="width:70px; height:105px; border-radius:10px; object-fit:cover;">
+                        <div style="flex-grow:1; display:flex; flex-direction:column; gap:5px; overflow:hidden;">
+                            <div style="font-weight:800; font-size:15px; color:#fff;">${rep.contentTitle}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                               <img src="${userImg}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;">
+                               <span style="font-size:12px; color:#aaa; font-weight:600;">${rep.userName}</span>
+                            </div>
+                            <div style="font-size:10px; color:#666;">UID: ${rep.userId}</div>
+                            <div style="font-size:12px; font-weight:800; color:#ffbb00; margin-top:4px;">TIPO: ${rep.reportType}</div>
+                            <div style="font-size:13px; color:#ddd; line-height:1.4;">${rep.reportMessage}</div>
+                        </div>
+                        <button onclick="previewDeleteReport('${rep.id}')" style="background:#1a1a1a; border:1px solid #333; width:36px; height:36px; border-radius:10px; display:flex; justify-content:center; align-items:center; cursor:pointer;">
+                            <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:#ff4a4a;"><path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"/></svg>
+                        </button>
+                    `;
+                    cont.appendChild(div);
+                });
+                
+            } catch(e) { showToast("Erro ao carregar relatórios", "error"); }
+        };
+
+        window.previewDeleteReport = function(id) {
+            docToDelete = id;
+            pendingModalAction = 'deleteReport';
+            document.getElementById('delete-modal').classList.add('show');
+        };
+        
+        // ADMIN: FERRAMENTAS DE LINKS (CHECKER E DUPLICATAS)
+        window.openAdminChecker = function() {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-checker').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "FERRAMENTAS DE LINKS";
+        };
+
+        window.startLinkChecker = async function() {
+            if(isCheckingLinks) return;
+            isCheckingLinks = true;
+            checkerQueue = [];
+            
+            const btn1 = document.getElementById('btn-start-checker');
+            const btn2 = document.getElementById('btn-start-duplicate-checker');
+            const status = document.getElementById('checker-status');
+            const log = document.getElementById('checker-log');
+            
+            btn1.disabled = true; btn2.disabled = true;
+            btn1.style.opacity = '0.5'; btn2.style.opacity = '0.5';
+            log.innerHTML = '';
+            
+            allPublishedContent.forEach(item => {
+                if(item.type === 'movie') {
+                    if(item.links) {
+                        if(item.links.main) checkerQueue.push({id: item.id, title: item.title, ep: 'Filme Completo', srvName: 'Principal', url: item.links.main});
+                        if(item.links.drive) checkerQueue.push({id: item.id, title: item.title, ep: 'Filme Completo', srvName: 'Drive', url: item.links.drive});
+                        if(item.links.telegram) checkerQueue.push({id: item.id, title: item.title, ep: 'Filme Completo', srvName: 'Telegram', url: item.links.telegram});
+                    }
+                } else {
+                    (item.seasons||[]).forEach(s => {
+                        (s.episodes||[]).forEach(e => {
+                            if(e.links) {
+                                if(e.links.main) checkerQueue.push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`, srvName: 'Principal', url: e.links.main});
+                                if(e.links.drive) checkerQueue.push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`, srvName: 'Drive', url: e.links.drive});
+                                if(e.links.telegram) checkerQueue.push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`, srvName: 'Telegram', url: e.links.telegram});
+                            }
+                        });
+                    });
+                }
+            });
+
+            let total = checkerQueue.length;
+            let checked = 0;
+            let errors = 0;
+            status.innerText = `Verificando 0 de ${total} links... (Isso pode demorar)`;
+
+            for(let task of checkerQueue) {
+                let isBroken = false;
+                let failReason = "";
+                let urlStr = task.url.trim();
+
+                if (!urlStr || (!urlStr.startsWith('http://') && !urlStr.startsWith('https://'))) {
+                    isBroken = true;
+                    failReason = "Formato de URL Inválido";
+                } else {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 Segundos
+                        const res = await fetch(urlStr, { method: 'GET', signal: controller.signal });
+                        clearTimeout(timeoutId);
+
+                        // Erros reais 404, 403, 410
+                        if (res.status === 404 || res.status === 403 || res.status === 410) {
+                            isBroken = true;
+                            failReason = `Erro HTTP ${res.status} (Link Inacessível)`;
+                        }
+                    } catch (err) {
+                        if (err.name === 'AbortError') {
+                            isBroken = true;
+                            failReason = "Tempo Limite Excedido (> 20s. Travado)";
+                        } else {
+                            // Bypass CORS: Ping Cego. Se o dominio existir ele responde opaco mas sem erro.
+                            try {
+                                const controller2 = new AbortController();
+                                const timeoutId2 = setTimeout(() => controller2.abort(), 20000);
+                                await fetch(urlStr, { method: 'GET', mode: 'no-cors', signal: controller2.signal });
+                                clearTimeout(timeoutId2);
+                                // Sucesso opaco, ignorado.
+                            } catch(fallbackErr) {
+                                isBroken = true;
+                                failReason = "Servidor Offline / Erro de DNS / Host Down";
+                            }
+                        }
+                    }
+                }
+
+                if (isBroken) {
+                    errors++;
+                    log.innerHTML += `
+                        <div class="checker-log-item">
+                            <strong style="font-size:14px;">${task.title} - ${task.ep}</strong>
+                            <span style="color:#ffaa00; font-weight:800;">Servidor: ${task.srvName}</span>
+                            <span style="color:#888;">URL: ${task.url}</span>
+                            <span style="color:#ff4a4a; font-size:11px;">Diagnóstico: ${failReason}</span>
+                            <div style="display:flex; gap:10px; margin-top:5px;">
+                                <button class="btn-small" style="background:#fff; color:#000; padding:6px 12px; font-size:11px;" onclick="editContent('${task.id}')">Editar</button>
+                                <button class="btn-small" style="background:#ff4a4a; color:#fff; border:none; padding:6px 12px; font-size:11px;" onclick="openDeleteModal('${task.id}')">Excluir</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                checked++;
+                status.innerText = `Verificando ${checked} de ${total} links...`;
+            }
+            
+            isCheckingLinks = false;
+            btn1.disabled = false; btn2.disabled = false;
+            btn1.style.opacity = '1'; btn2.style.opacity = '1';
+            
+            if(errors === 0) {
+                status.innerText = `Análise Concluída! Todos os ${total} links estão funcionando perfeitamente.`;
+                status.style.color = '#00c851';
+            } else {
+                status.innerText = `Análise Concluída! Identificados ${errors} links inativos ou corrompidos.`;
+                status.style.color = '#ff4a4a';
+            }
+        };
+
+        window.startDuplicateChecker = function() {
+            if(isCheckingLinks) return;
+            const btn1 = document.getElementById('btn-start-checker');
+            const btn2 = document.getElementById('btn-start-duplicate-checker');
+            const status = document.getElementById('checker-status');
+            const log = document.getElementById('checker-log');
+
+            btn1.disabled = true; btn2.disabled = true;
+            btn1.style.opacity = '0.5'; btn2.style.opacity = '0.5';
+            log.innerHTML = '';
+            status.style.color = '#ffaa00';
+            status.innerText = "Cruzando dados do banco... Aguarde.";
+
+            let urlMap = {};
+
+            allPublishedContent.forEach(item => {
+                if(item.type === 'movie') {
+                    if(item.links) {
+                        if(item.links.main && item.links.main.trim() !== "") {
+                            if(!urlMap[item.links.main.trim()]) urlMap[item.links.main.trim()] = [];
+                            urlMap[item.links.main.trim()].push({id: item.id, title: item.title, ep: 'Filme Completo'});
+                        }
+                        if(item.links.drive && item.links.drive.trim() !== "") {
+                            if(!urlMap[item.links.drive.trim()]) urlMap[item.links.drive.trim()] = [];
+                            urlMap[item.links.drive.trim()].push({id: item.id, title: item.title, ep: 'Filme Completo'});
+                        }
+                        if(item.links.telegram && item.links.telegram.trim() !== "") {
+                            if(!urlMap[item.links.telegram.trim()]) urlMap[item.links.telegram.trim()] = [];
+                            urlMap[item.links.telegram.trim()].push({id: item.id, title: item.title, ep: 'Filme Completo'});
+                        }
+                    }
+                } else {
+                    (item.seasons||[]).forEach(s => {
+                        (s.episodes||[]).forEach(e => {
+                            if(e.links) {
+                                if(e.links.main && e.links.main.trim() !== "") {
+                                    if(!urlMap[e.links.main.trim()]) urlMap[e.links.main.trim()] = [];
+                                    urlMap[e.links.main.trim()].push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`});
+                                }
+                                if(e.links.drive && e.links.drive.trim() !== "") {
+                                    if(!urlMap[e.links.drive.trim()]) urlMap[e.links.drive.trim()] = [];
+                                    urlMap[e.links.drive.trim()].push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`});
+                                }
+                                if(e.links.telegram && e.links.telegram.trim() !== "") {
+                                    if(!urlMap[e.links.telegram.trim()]) urlMap[e.links.telegram.trim()] = [];
+                                    urlMap[e.links.telegram.trim()].push({id: item.id, title: item.title, ep: `T${s.seasonNum} E${e.epNum}`});
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+
+            let duplicateCount = 0;
+            for (let url in urlMap) {
+                if (urlMap[url].length > 1) {
+                    duplicateCount++;
+                    let occurrencesHtml = urlMap[url].map(occ => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#222; padding:8px; border-radius:6px; margin-top:4px;">
+                            <span style="font-size:12px; color:#ddd;">${occ.title} - ${occ.ep}</span>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-small" style="margin:0; background:#fff; color:#000; padding:4px 8px; font-size:11px;" onclick="editContent('${occ.id}')">Editar</button>
+                                <button class="btn-small" style="margin:0; background:#ff4a4a; border:none; color:#fff; padding:4px 8px; font-size:11px;" onclick="openDeleteModal('${occ.id}')">Excluir</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    log.innerHTML += `
+                        <div class="checker-log-item" style="border-left-color: #ffaa00;">
+                            <strong style="color:#ffaa00;">Link Duplicado Encontrado (${urlMap[url].length} usos)</strong>
+                            <span style="color:#888; font-size:11px; word-break:break-all;">URL: ${url}</span>
+                            <div style="margin-top:5px;">
+                                ${occurrencesHtml}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            btn1.disabled = false; btn2.disabled = false;
+            btn1.style.opacity = '1'; btn2.style.opacity = '1';
+
+            if(duplicateCount === 0) {
+                status.innerText = `Análise Concluída! Nenhum link repetido foi encontrado em sua base de dados.`;
+                status.style.color = '#00c851';
+            } else {
+                status.innerText = `Encontrados ${duplicateCount} links usados em mais de um episódio ou filme.`;
+                status.style.color = '#ffaa00';
+            }
+        };
+
+        // ADMIN: ENVIAR PREMIUM
+        window.openAdminEnviarPremium = function(forcedUID = null) {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "ENVIAR PREMIUM";
+            
+            document.getElementById('input-adm-uid').value = forcedUID || '';
+            document.getElementById('adm-user-preview').classList.add('hidden');
+            document.getElementById('adm-plan-selection').classList.add('hidden');
+            document.getElementById('adm-manual-date').classList.add('hidden');
+            document.querySelectorAll('.adm-plan-btn').forEach(b => { b.style.borderColor = '#333'; b.style.color = '#fff'; });
+            admTargetUser = null;
+            admSelectedPlan = null;
+            
+            if(forcedUID) fetchUserForPremium();
+        };
+
+        window.fetchUserForPremium = async function() {
+            const uid = document.getElementById('input-adm-uid').value.trim();
+            if(!uid) return;
+            try {
+                const docSnap = await getDoc(doc(db, "users", uid));
+                if(docSnap.exists()) {
+                    admTargetUser = docSnap.data();
+                    document.getElementById('adm-user-img').src = admTargetUser.photoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z'/%3E%3C/svg%3E";
+                    document.getElementById('adm-user-name').innerText = admTargetUser.displayName;
+                    document.getElementById('adm-user-current-plan').innerText = admTargetUser.premiumPlan ? `Plano Atual: ${admTargetUser.premiumPlan.toUpperCase()}` : "Plano Atual: GRÁTIS";
+                    document.getElementById('adm-user-preview').classList.remove('hidden');
+                    document.getElementById('adm-plan-selection').classList.remove('hidden');
+                } else {
+                    showToast("Usuário não encontrado", "error");
+                    document.getElementById('adm-user-preview').classList.add('hidden');
+                    document.getElementById('adm-plan-selection').classList.add('hidden');
+                }
+            } catch(e) { showToast("Erro ao buscar", "error"); }
+        };
+        
+        window.selectAdmPlan = function(plan, btnEl) {
+            admSelectedPlan = plan;
+            document.querySelectorAll('.adm-plan-btn').forEach(b => { b.style.borderColor = '#333'; b.style.color = '#fff'; });
+            btnEl.style.borderColor = '#ffaa00';
+            btnEl.style.color = '#ffaa00';
+            
+            if(plan === 'manual') document.getElementById('adm-manual-date').classList.remove('hidden');
+            else document.getElementById('adm-manual-date').classList.add('hidden');
+        };
+        
+        window.confirmSendPremium = function() {
+            if(!admTargetUser || !admSelectedPlan) { showToast("Selecione um plano", "error"); return; }
+            let expiresAt = null;
+            const now = new Date();
+            
+            if(admSelectedPlan === '10_dias') expiresAt = new Date(now.getTime() + 10*24*60*60*1000).toISOString();
+            else if(admSelectedPlan === '1_mes') expiresAt = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+            else if(admSelectedPlan === '6_meses') expiresAt = new Date(now.setMonth(now.getMonth() + 6)).toISOString();
+            else if(admSelectedPlan === 'manual') {
+                const manual = document.getElementById('adm-manual-date').value;
+                if(!manual) { showToast("Preencha a data", "error"); return; }
+                expiresAt = new Date(manual).toISOString();
+            }
+            
+            pendingPublishData = { uid: admTargetUser.uid, plan: admSelectedPlan, expiresAt: expiresAt };
+            document.getElementById('preview-title').innerText = "Confirmar Premium";
+            document.getElementById('preview-content').innerText = `USUÁRIO: ${admTargetUser.displayName}\nPLANO: ${admSelectedPlan.toUpperCase()}\nEXPIRA: ${expiresAt ? new Date(expiresAt).toLocaleString() : 'NUNCA'}`;
+            pendingModalAction = 'assignPremium';
+            document.getElementById('preview-modal').classList.add('show');
+        };
+
+        // ADMIN: PREMIUM ATIVOS
+        window.openAdminWatchParties = async function() {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.querySelectorAll('.admin-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('admin-watch-parties').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "SALAS ATIVAS (WATCH PARTY)";
+            
+            const cont = document.getElementById('active-wp-list');
+            cont.innerHTML = '<div class="skeleton" style="width:100%; height:100px;"></div>';
+            
+            try {
+                // Lê as salas ativas do Realtime Database (RTDB)
+                const snapshot = await get(ref(rtdb, "watch_rooms"));
+                let rooms = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnap => {
+                        rooms.push({ id: childSnap.key, ...childSnap.val() });
+                    });
+                }
+                
+                cont.innerHTML = '';
+                if(rooms.length === 0) {
+                    cont.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Nenhuma sala ativa no momento.</div>';
+                    return;
+                }
+                
+                rooms.forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = 'edit-item';
+                    const usersCount = r.users ? r.users.length : 0;
+                    const isPriv = r.isPrivate ? '<span style="color:#ffaa00;">(PRIVADA)</span>' : '<span style="color:#00c851;">(PÚBLICA)</span>';
+                    
+                    div.innerHTML = `
+                        <img src="${r.moviePoster}" style="width:50px; height:75px;">
+                        <div class="edit-item-info">
+                            <div class="edit-item-title">${r.movieTitle} ${isPriv}</div>
+                            <div class="edit-item-type">Host: ${r.hostName} | Usuários: ${usersCount}</div>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="del-btn" onclick="openDeleteModal('${r.id}', 'wp')" title="Encerrar Sala"><svg viewBox="0 0 24 24"><path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"/></svg></button>
+                        </div>
+                    `;
+                    cont.appendChild(div);
+                });
+            } catch(e) { showToast("Erro ao carregar salas", "error"); }
+        };
+
+        window.openAdminPremiumAtivos = async function() {
+            document.getElementById('admin-menu').classList.add('hidden');
+            document.getElementById('admin-publicar').classList.add('hidden');
+            document.getElementById('admin-editar').classList.add('hidden');
+            document.getElementById('admin-relatorios').classList.add('hidden');
+            document.getElementById('admin-checker').classList.add('hidden');
+            document.getElementById('admin-enviar-premium').classList.add('hidden');
+            document.getElementById('admin-premium-ativos').classList.remove('hidden');
+            document.getElementById('admin-main-title').innerText = "PREMIUM ATIVOS";
+            
+            const cont = document.getElementById('active-premium-list');
+            cont.innerHTML = '<div class="skeleton" style="width:100%; height:100px;"></div>';
+            
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                let users = [];
+                snap.forEach(d => {
+                    const data = d.data();
+                    if(data.premiumPlan && data.premiumPlan !== 'vitalicio') users.push(data);
+                });
+                
+                users.sort((a,b) => new Date(a.premiumExpiresAt) - new Date(b.premiumExpiresAt));
+                
+                cont.innerHTML = '';
+                if(users.length === 0) {
+                    cont.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Nenhum usuário temporário ativo.</div>';
+                    return;
+                }
+                
+                users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.background = '#111';
+                    div.style.border = '1px solid #333';
+                    div.style.borderRadius = '16px';
+                    div.style.padding = '15px';
+                    div.style.gap = '15px';
+                    div.style.alignItems = 'center';
+                    
+                    const userImg = u.photoURL || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23666%22%3E%3Cpath d=%22M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z%22/%3E%3C/svg%3E';
+                    const exp = new Date(u.premiumExpiresAt).toLocaleString();
+                    const isExpired = new Date(u.premiumExpiresAt).getTime() < new Date().getTime();
+                    
+                    div.innerHTML = `
+                        <img src="${userImg}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                        <div style="flex-grow:1; display:flex; flex-direction:column; overflow:hidden;">
+                            <div style="font-weight:800; font-size:14px; color:#fff;">${u.displayName}</div>
+                            <div style="font-size:11px; color:#ffaa00; font-weight:800;">${u.premiumPlan.toUpperCase()}</div>
+                            <div style="font-size:11px; color:${isExpired ? '#ff4a4a' : '#888'};">Exp: ${exp}</div>
+                        </div>
+                        <button onclick="openAdminEnviarPremium('${u.uid}')" style="background:#ffaa00; color:#000; border:none; padding:8px 12px; font-size:11px; font-weight:800; border-radius:8px; cursor:pointer; text-transform:uppercase;">RENOVAR</button>
+                    `;
+                    cont.appendChild(div);
+                });
+                
+            } catch(e) { showToast("Erro ao carregar ativos", "error"); }
+        };
+
+        window.setPublishType = function(type) {
+            publishType = type;
+            document.getElementById('toggle-movie').classList.toggle('active', type === 'movie');
+            document.getElementById('toggle-tv').classList.toggle('active', type === 'tv');
+            document.getElementById('pub-movie-links').classList.toggle('hidden', type === 'tv');
+            document.getElementById('pub-tv-links').classList.toggle('hidden', type === 'movie');
+            document.getElementById('tmdb-search').placeholder = type === 'movie' ? "Buscar Filme no TMDB..." : "Buscar Série no TMDB...";
+        };
+
+        let tmdbTimeout = null;
+        document.getElementById('tmdb-search').addEventListener('input', (e) => {
+            clearTimeout(tmdbTimeout);
+            const queryData = e.target.value;
+            if (queryData.length < 3) {
+                document.getElementById('tmdb-results').classList.add('hidden');
+                return;
+            }
+            tmdbTimeout = setTimeout(() => searchTMDB(queryData), 500);
+        });
+
+        async function searchTMDB(queryData) {
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/search/${publishType}?query=${encodeURIComponent(queryData)}&language=pt-BR`, {
+                    headers: { accept: 'application/json', Authorization: `Bearer ${TMDB_TOKEN}` }
+                });
+                const data = await res.json();
+                renderTMDBResults(data.results.slice(0, 5));
+            } catch (e) { showToast("Erro no TMDB", "error"); }
+        }
+
+        function renderTMDBResults(results) {
+            const container = document.getElementById('tmdb-results');
+            container.innerHTML = '';
+            if (results.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'search-item';
+                const poster = item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : '';
+                const title = item.title || item.name;
+                const year = (item.release_date || item.first_air_date || '').split('-')[0];
+                div.innerHTML = `
+                    <img src="${poster}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23333%22%3E%3Cpath d=%22M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z%22/%3E%3C/svg%3E'">
+                    <div class="search-item-info">
+                        <span class="search-item-title">${title}</span>
+                        <span class="search-item-year">${year}</span>
+                    </div>
+                `;
+                div.onclick = () => selectTMDB(item.id);
+                container.appendChild(div);
+            });
+            container.classList.remove('hidden');
+        }
+
+        async function selectTMDB(id) {
+            document.getElementById('tmdb-results').classList.add('hidden');
+            document.getElementById('tmdb-search').value = "";
+            showToast("Extraindo dados...", "success");
+            try {
+                const resDetails = await fetch(`https://api.themoviedb.org/3/${publishType}/${id}?language=pt-BR`, { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } });
+                const details = await resDetails.json();
+                const resCredits = await fetch(`https://api.themoviedb.org/3/${publishType}/${id}/credits?language=pt-BR`, { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } });
+                const credits = await resCredits.json();
+                const resProviders = await fetch(`https://api.themoviedb.org/3/${publishType}/${id}/watch/providers`, { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } });
+                const provData = await resProviders.json();
+
+                document.getElementById('pub-tmdb-id').value = details.id;
+                document.getElementById('pub-title').value = details.title || details.name;
+                document.getElementById('pub-original-title').value = details.original_title || details.original_name || "";
+                document.getElementById('pub-synopsis').value = details.overview;
+                document.getElementById('pub-genres').value = details.genres.map(g => g.name).join(', ');
+                document.getElementById('pub-year').value = (details.release_date || details.first_air_date || '').split('-')[0];
+                
+                if (details.belongs_to_collection) {
+                    document.getElementById('pub-collection').value = details.belongs_to_collection.name;
+                } else {
+                    document.getElementById('pub-collection').value = '';
+                }
+                
+                const actors = credits.cast.slice(0, 5).map(c => c.name).join(', ');
+                document.getElementById('pub-actors').value = actors;
+
+                const brProviders = provData.results?.BR?.flatrate;
+                document.getElementById('pub-streaming').value = brProviders ? brProviders.map(p => p.provider_name).join(', ') : 'Não disponível';
+
+                const posterUrl = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : '';
+                document.getElementById('pub-poster').value = posterUrl;
+                if (posterUrl) {
+                    const img = document.getElementById('pub-poster-preview');
+                    img.src = posterUrl;
+                    img.classList.remove('hidden');
+                }
+
+                const backdropUrl = details.backdrop_path ? `https://image.tmdb.org/t/p/original${details.backdrop_path}` : '';
+                document.getElementById('pub-backdrop').value = backdropUrl;
+
+                let clearLogoUrl = '';
+                try {
+                    const resImages = await fetch(`https://api.themoviedb.org/3/${publishType}/${id}/images`, { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } });
+                    const imgData = await resImages.json();
+                    if (imgData.logos && imgData.logos.length > 0) {
+                        const bestLogo = imgData.logos.find(l => l.iso_639_1 === 'pt') || imgData.logos.find(l => l.iso_639_1 === 'en') || imgData.logos[0];
+                        if (bestLogo) clearLogoUrl = `https://image.tmdb.org/t/p/w500${bestLogo.file_path}`;
+                    }
+                } catch(e) {}
+                document.getElementById('pub-clear-logo').value = clearLogoUrl;
+
+                if (publishType === 'tv') {
+                    seriesData = [];
+                    renderSeasonsUI();
+                }
+            } catch (e) { showToast("Erro ao obter dados", "error"); }
+        }
+
+        document.getElementById('pub-custom-poster').addEventListener('input', function() {
+            const val = this.value;
+            if(val) {
+                const img = document.getElementById('pub-poster-preview');
+                img.src = val;
+                img.classList.remove('hidden');
+            } else if(document.getElementById('pub-poster').value) {
+                const img = document.getElementById('pub-poster-preview');
+                img.src = document.getElementById('pub-poster').value;
+                img.classList.remove('hidden');
+            }
+        });
+
+        window.toggleHDCAM = function() {
+            document.getElementById('badge-hdcam').classList.toggle('active');
+        };
+
+        window.toggleGlobalPremium = function() {
+            document.getElementById('badge-global-premium').classList.toggle('active');
+        };
+
+        window.toggleMovieBadge = function(type) {
+            const badge = document.getElementById(`badge-movie-${type}`);
+            badge.classList.toggle('active');
+            if (type === 'drive' || type === 'telegram') {
+                document.getElementById(`input-movie-${type}`).classList.toggle('hidden', !badge.classList.contains('active'));
+            }
+        };
+
+        window.addSpecificSeason = function(sNum) {
+            if(!seriesData.find(s => s.seasonNum === sNum)) {
+                seriesData.push({ seasonNum: sNum, scheduleDate: '', episodes: [], isExpanded: true });
+                seriesData.sort((a,b) => a.seasonNum - b.seasonNum);
+                renderSeasonsUI();
+            }
+        };
+
+        window.removeSeason = function(sIndex) {
+            seriesData.splice(sIndex, 1);
+            renderSeasonsUI();
+        };
+
+        window.toggleSeason = function(sIndex) {
+            seriesData[sIndex].isExpanded = !seriesData[sIndex].isExpanded;
+            renderSeasonsUI();
+        };
+
+        window.updateSeasonSchedule = function(sIndex, val) {
+            seriesData[sIndex].scheduleDate = val;
+        };
+
+        window.addEpisode = function(sIndex, epNum) {
+            const season = seriesData[sIndex];
+            if (!season.episodes.find(e => e.epNum === epNum)) {
+                season.episodes.push({ epNum, scheduleDate: '', hasSchedule: false, links: { main: '', drive: '', telegram: '' } });
+                season.episodes.sort((a, b) => a.epNum - b.epNum);
+                renderSeasonsUI();
+            }
+        };
+
+        window.removeEpisode = function(sIndex, eIndex) {
+            seriesData[sIndex].episodes.splice(eIndex, 1);
+            renderSeasonsUI();
+        };
+
+        window.updateEpLink = function(sIndex, eIndex, field, value) {
+            if (!seriesData[sIndex].episodes[eIndex].links) {
+                seriesData[sIndex].episodes[eIndex].links = { main: '', drive: '', telegram: '' };
+            }
+            seriesData[sIndex].episodes[eIndex].links[field] = value;
+        };
+
+        window.toggleEpSchedule = function(sIndex, eIndex) {
+            const ep = seriesData[sIndex].episodes[eIndex];
+            ep.hasSchedule = !ep.hasSchedule;
+            if(!ep.hasSchedule) ep.scheduleDate = '';
+            renderSeasonsUI();
+        };
+
+        window.updateEpSchedule = function(sIndex, eIndex, val) {
+            seriesData[sIndex].episodes[eIndex].scheduleDate = val;
+        };
+        
+        window.toggleEpBadge = function(sIndex, eIndex, type) {
+            const ep = seriesData[sIndex].episodes[eIndex];
+            if (!ep.links) ep.links = { main: '', drive: '', telegram: '' };
+            
+            if(ep[`has_${type}`] === undefined) ep[`has_${type}`] = false;
+            ep[`has_${type}`] = !ep[`has_${type}`];
+            if(!ep[`has_${type}`]) ep.links[type] = '';
+            
+            renderSeasonsUI();
+        };
+
+        window.openBulkModal = function(sIndex) {
+            currentBulkSeasonIndex = sIndex;
+            document.getElementById('bulk-links').value = '';
+            document.getElementById('bulk-modal').classList.add('show');
+        };
+
+        window.closeBulkModal = function() {
+            document.getElementById('bulk-modal').classList.remove('show');
+            currentBulkSeasonIndex = null;
+        };
+
+        window.formatBulkLinks = function() {
+            const el = document.getElementById('bulk-links');
+            const lines = el.value.split('\n');
+            let formatted = lines.map((l, i) => {
+                let clean = l.replace(/^\d+\.\s*/, '');
+                return clean.trim() ? `${i + 1}. ${clean}` : l;
+            });
+            if(el.value !== formatted.join('\n')){
+                el.value = formatted.join('\n');
+            }
+        };
+
+        window.confirmBulkAdd = function() {
+            const lines = document.getElementById('bulk-links').value.split('\n')
+                .map(l => l.replace(/^\d+\.\s*/, '').trim())
+                .filter(l => l !== '');
+                
+            if(lines.length === 0) {
+                closeBulkModal();
+                return;
+            }
+
+            const season = seriesData[currentBulkSeasonIndex];
+            let nextEpNum = season.episodes.length > 0 ? Math.max(...season.episodes.map(e => e.epNum)) + 1 : 1;
+
+            lines.forEach(line => {
+                season.episodes.push({
+                    epNum: nextEpNum++,
+                    scheduleDate: '',
+                    hasSchedule: false,
+                    links: { main: line, drive: '', telegram: '' }
+                });
+            });
+
+            season.episodes.sort((a, b) => a.epNum - b.epNum);
+            season.isExpanded = true; 
+            closeBulkModal();
+            renderSeasonsUI();
+            showToast(`${lines.length} episódios gerados.`, 'success');
+        };
+
+        function renderSeasonsUI() {
+            const cont = document.getElementById('seasons-container');
+            const missingCont = document.getElementById('missing-seasons-container');
+            cont.innerHTML = '';
+            missingCont.innerHTML = '';
+
+            let existingSeasons = seriesData.map(s => s.seasonNum);
+            let maxSeason = existingSeasons.length > 0 ? Math.max(...existingSeasons) : 0;
+            
+            let missingButtonsHTML = '';
+            for (let i = 1; i <= maxSeason; i++) {
+                if (!existingSeasons.includes(i)) {
+                    missingButtonsHTML += `<button class="btn-small" onclick="addSpecificSeason(${i})">+ Add Temp ${i}</button>`;
+                }
+            }
+            missingButtonsHTML += `<button class="btn-small" style="background:#fff; color:#000;" onclick="addSpecificSeason(${maxSeason + 1})">+ Add Temp ${maxSeason + 1}</button>`;
+            missingCont.innerHTML = missingButtonsHTML;
+
+            seriesData.forEach((season, sIndex) => {
+                const sDiv = document.createElement('div');
+                sDiv.className = 'season-block';
+                
+                let isExpanded = season.isExpanded !== false; 
+                
+                let maxEp = season.episodes.length > 0 ? Math.max(...season.episodes.map(e => e.epNum)) : 0;
+                let existingEps = season.episodes.map(e => e.epNum);
+                let missingEpButtons = '';
+                
+                for (let i = 1; i <= maxEp; i++) {
+                    if (!existingEps.includes(i)) {
+                        missingEpButtons += `<button class="btn-small" onclick="addEpisode(${sIndex}, ${i})">+ Add Ep ${i}</button>`;
+                    }
+                }
+                missingEpButtons += `<button class="btn-small" onclick="addEpisode(${sIndex}, ${maxEp + 1})">+ Add Ep ${maxEp + 1}</button>`;
+
+                let epsHTML = '';
+                season.episodes.forEach((ep, eIndex) => {
+                    const hasDrive = ep.has_drive || (ep.links && ep.links.drive && ep.links.drive !== '');
+                    const hasTg = ep.has_telegram || (ep.links && ep.links.telegram && ep.links.telegram !== '');
+                    const hasSchedule = ep.hasSchedule;
+                    
+                    epsHTML += `
+                        <div class="episode-block">
+                            <button class="btn-remove-ep" onclick="removeEpisode(${sIndex}, ${eIndex})">X</button>
+                            <div style="font-weight:800; margin-bottom:8px; font-size:14px;">Episódio ${ep.epNum}</div>
+                            <input type="text" class="input-base" style="padding:12px; font-size:13px;" placeholder="Link Principal" value="${ep.links ? ep.links.main || '' : ''}" onchange="updateEpLink(${sIndex}, ${eIndex}, 'main', this.value)">
+                            <div class="badges-container">
+                                <div class="badge ${hasDrive ? 'active' : ''}" onclick="toggleEpBadge(${sIndex}, ${eIndex}, 'drive')">Drive</div>
+                                <div class="badge ${hasTg ? 'active' : ''}" onclick="toggleEpBadge(${sIndex}, ${eIndex}, 'telegram')">Telegram</div>
+                                <div class="badge ${hasSchedule ? 'active' : ''}" onclick="toggleEpSchedule(${sIndex}, ${eIndex})">Programar</div>
+                            </div>
+                            <div id="ep-input-container-${sIndex}-${eIndex}-drive" class="${hasDrive ? '' : 'hidden'}">
+                                <input type="text" class="input-base dynamic-link-input" style="padding:12px; font-size:13px;" placeholder="Link Drive" value="${ep.links ? ep.links.drive || '' : ''}" onchange="updateEpLink(${sIndex}, ${eIndex}, 'drive', this.value)">
+                            </div>
+                            <div id="ep-input-container-${sIndex}-${eIndex}-telegram" class="${hasTg ? '' : 'hidden'}">
+                                <input type="text" class="input-base dynamic-link-input" style="padding:12px; font-size:13px;" placeholder="Link Telegram" value="${ep.links ? ep.links.telegram || '' : ''}" onchange="updateEpLink(${sIndex}, ${eIndex}, 'telegram', this.value)">
+                            </div>
+                            <div id="ep-schedule-container-${sIndex}-${eIndex}" class="${hasSchedule ? '' : 'hidden'}">
+                                <input type="datetime-local" class="input-base" style="margin-top:12px; padding:12px; font-size:13px;" value="${ep.scheduleDate || ''}" onchange="updateEpSchedule(${sIndex}, ${eIndex}, this.value)">
+                            </div>
+                        </div>
+                    `;
+                });
+
+                sDiv.innerHTML = `
+                    <div class="season-header">
+                        <span onclick="toggleSeason(${sIndex})" style="flex-grow:1;">Temporada ${season.seasonNum} <span style="font-size:12px; color:#666; margin-left:10px;">${isExpanded ? '▲' : '▼'}</span></span>
+                        <div class="season-header-actions">
+                            <button class="btn-small" style="background:#ffbb00; color:#000; border:none; padding:4px 10px; font-size:11px;" onclick="openBulkModal(${sIndex})">Gerar em Massa</button>
+                            <button class="btn-remove-season" onclick="removeSeason(${sIndex})">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="season-content ${isExpanded ? '' : 'hidden'}">
+                        <input type="datetime-local" class="input-base" style="padding:12px; font-size:13px; margin-bottom:15px;" value="${season.scheduleDate || ''}" onchange="updateSeasonSchedule(${sIndex}, this.value)" placeholder="Agendamento da Temporada">
+                        ${epsHTML}
+                        <div class="add-ep-buttons">
+                            ${missingEpButtons}
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(sDiv);
+            });
+        }
+
+        function clearPublishForm() {
+            document.getElementById('pub-tmdb-id').value = '';
+            document.getElementById('pub-poster').value = '';
+            document.getElementById('pub-custom-poster').value = '';
+            document.getElementById('pub-backdrop').value = '';
+            document.getElementById('pub-collection').value = '';
+            document.getElementById('pub-original-title').value = '';
+            document.getElementById('pub-clear-logo').value = '';
+            document.getElementById('pub-latest-thumb').value = '';
+            document.getElementById('pub-poster-preview').src = '';
+            document.getElementById('pub-poster-preview').classList.add('hidden');
+            document.getElementById('pub-title').value = '';
+            document.getElementById('pub-synopsis').value = '';
+            document.getElementById('pub-actors').value = '';
+            document.getElementById('pub-streaming').value = '';
+            document.getElementById('pub-genres').value = '';
+            document.getElementById('pub-year').value = '';
+            document.getElementById('pub-root-schedule').value = '';
+            document.getElementById('badge-hdcam').classList.remove('active');
+            document.getElementById('badge-global-premium').classList.remove('active');
+            
+            document.getElementById('badge-vertical').classList.remove('active');
+document.getElementById('pub-movie-main').value = '';
+            document.getElementById('input-movie-drive').value = '';
+            document.getElementById('input-movie-telegram').value = '';
+            document.querySelectorAll('#pub-movie-links .badge').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#pub-movie-links .dynamic-link-input').forEach(i => i.classList.add('hidden'));
+            if(document.getElementById('custom-links-container')) document.getElementById('custom-links-container').innerHTML = '';
+                
+                if(typeof window.resetSeqGenerator === 'function') window.resetSeqGenerator();
+                seriesData = [];
+            renderSeasonsUI();
+        }
+        
+        window.customLinkCounter = 0;
+        window.addCustomServerBox = function(data = null) {
+            window.customLinkCounter++;
+            const cont = document.getElementById('custom-links-container');
+            const div = document.createElement('div');
+            div.className = 'custom-link-box';
+            div.id = `custom-link-${window.customLinkCounter}`;
+            
+            const nameVal = data ? data.name : '';
+            const urlVal = data ? data.url : '';
+            const isSub = data && data.isSub ? 'checked' : '';
+            const isRedir = data && data.isRedir ? 'checked' : '';
+            const isPrem = data && data.isPrem ? 'checked' : '';
+
+            div.innerHTML = `
+                <button class="btn-remove-link" onclick="document.getElementById('custom-link-${window.customLinkCounter}').remove()">X</button>
+                <input type="text" class="input-base cust-name" placeholder="Nome do Servidor (Ex: Principal Dublado)" value="${nameVal}">
+                <input type="text" class="input-base cust-url" placeholder="URL do Vídeo ou Link Externo" value="${urlVal}">
+                <div class="custom-link-options">
+                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="cust-sub" ${isSub}> Legendado</label>
+                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="cust-redir" ${isRedir}> Redirecionar ao clicar</label>
+                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" class="cust-prem" ${isPrem}> Premium</label>
+                </div>
+            `;
+            cont.appendChild(div);
+        };
+
+        window.getCustomLinksData = function() {
+            const links = [];
+            const container = document.getElementById('custom-links-container');
+            if(!container) return links;
+            
+            container.querySelectorAll('.custom-link-box').forEach(box => {
+                const name = box.querySelector('.cust-name').value.trim();
+                const url = box.querySelector('.cust-url').value.trim();
+                const isSub = box.querySelector('.cust-sub').checked;
+                const isRedir = box.querySelector('.cust-redir').checked;
+                const isPrem = box.querySelector('.cust-prem').checked;
+                if(url) links.push({ name, url, isSub, isRedir, isPrem });
+            });
+            return links;
+        };
+window.closeDuplicateWarningModal = function() {
+            document.getElementById('duplicate-warning-modal').classList.remove('show');
+        };
+
+        window.preparePublish = async function() {
+            const btnFinal = document.getElementById('btn-final-publish');
+            btnFinal.disabled = true;
+            btnFinal.innerText = "Buscando Imagens Extras no TMDB...";
+
+            const tmdbId = document.getElementById('pub-tmdb-id').value;
+            let latestS = 0, latestE = 0, latestBadge = '';
+            let latestThumb = document.getElementById('pub-latest-thumb').value;
+
+            if (publishType === 'tv' && seriesData.length > 0) {
+                const now = Date.now();
+                seriesData.forEach(s => {
+                    let seasonScheduled = s.scheduleDate ? new Date(s.scheduleDate).getTime() > now : false;
+                    if (!seasonScheduled) {
+                        if (s.seasonNum > latestS) latestS = s.seasonNum;
+                        s.episodes.forEach(e => {
+                            let epScheduled = e.scheduleDate ? new Date(e.scheduleDate).getTime() > now : false;
+                            if (!epScheduled && s.seasonNum === latestS && e.epNum > latestE) {
+                                latestE = e.epNum;
+                            }
+                        });
+                    }
+                });
+
+                if (latestS > 0 && latestE > 0) {
+                    latestBadge = `T${latestS} E${latestE}`;
+                    if (tmdbId) {
+                        try {
+                            const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${latestS}/episode/${latestE}?language=pt-BR`, { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } });
+                            const epData = await res.json();
+                            if (epData.still_path) {
+                                latestThumb = `https://image.tmdb.org/t/p/w300${epData.still_path}`;
+                                document.getElementById('pub-latest-thumb').value = latestThumb;
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+
+            btnFinal.disabled = false;
+            btnFinal.innerText = "Publicar Conteúdo";
+
+            const finalPoster = document.getElementById('pub-custom-poster').value || document.getElementById('pub-poster').value;
+            
+            const data = {
+                type: publishType,
+                tmdbId: tmdbId,
+                poster: finalPoster,
+                backdrop: document.getElementById('pub-backdrop').value,
+                clearLogo: document.getElementById('pub-clear-logo').value,
+                latestThumb: latestThumb,
+                latestS: latestS,
+                latestE: latestE,
+                latestBadge: latestBadge,
+                collection: document.getElementById('pub-collection').value,
+                originalTitle: document.getElementById('pub-original-title').value,
+                title: document.getElementById('pub-title').value,
+                synopsis: document.getElementById('pub-synopsis').value,
+                actors: document.getElementById('pub-actors').value,
+                streaming: document.getElementById('pub-streaming').value,
+                genres: document.getElementById('pub-genres').value,
+                year: document.getElementById('pub-year').value,
+                rootScheduleDate: document.getElementById('pub-root-schedule').value,
+                isHDCAM: document.getElementById('badge-hdcam').classList.contains('active'),
+                isGlobalPremium: document.getElementById('badge-global-premium').classList.contains('active'),
+                isVertical: document.getElementById('badge-vertical').classList.contains('active'),
+isDraft: false, 
+                createdAt: new Date().toISOString()
+            };
+
+            if (!data.title) { showToast("O título é obrigatório", "error"); return; }
+
+            let currentUrls = [];
+
+            if (publishType === 'movie') {
+                data.links = {
+                    main: document.getElementById('pub-movie-main').value,
+                    drive: document.getElementById('input-movie-drive').value,
+                    telegram: document.getElementById('input-movie-telegram').value,
+                    custom: window.getCustomLinksData()
+                };
+                if(data.links.main) currentUrls.push(data.links.main.trim());
+                if(data.links.drive) currentUrls.push(data.links.drive.trim());
+                if(data.links.telegram) currentUrls.push(data.links.telegram.trim());
+                data.links.custom.forEach(c => currentUrls.push(c.url));
+            } else {
+                seriesData.forEach(s => {
+                    s.episodes.forEach(e => {
+                        if(!e.links) e.links = {main:'', drive:'', telegram:''};
+                        if(e.links.main) currentUrls.push(e.links.main.trim());
+                        if(e.links.drive) currentUrls.push(e.links.drive.trim());
+                        if(e.links.telegram) currentUrls.push(e.links.telegram.trim());
+                    });
+                });
+                data.seasons = seriesData;
+            }
+
+            // Cross-check for duplicates in the DB
+            let duplicatedInfo = [];
+            allPublishedContent.forEach(item => {
+                if (isEditing && editingDocId === item.id) return; 
+
+                let itemUrls = [];
+                if (item.type === 'movie') {
+                    if(item.links) {
+                        if(item.links.main) itemUrls.push({url: item.links.main.trim(), context: item.title});
+                        if(item.links.drive) itemUrls.push({url: item.links.drive.trim(), context: item.title});
+                        if(item.links.telegram) itemUrls.push({url: item.links.telegram.trim(), context: item.title});
+                    }
+                } else {
+                    (item.seasons || []).forEach(s => {
+                        (s.episodes || []).forEach(e => {
+                            if(e.links) {
+                                if(e.links.main) itemUrls.push({url: e.links.main.trim(), context: `${item.title} (T${s.seasonNum} E${e.epNum})`});
+                                if(e.links.drive) itemUrls.push({url: e.links.drive.trim(), context: `${item.title} (T${s.seasonNum} E${e.epNum})`});
+                                if(e.links.telegram) itemUrls.push({url: e.links.telegram.trim(), context: `${item.title} (T${s.seasonNum} E${e.epNum})`});
+                            }
+                        });
+                    });
+                }
+
+                itemUrls.forEach(iUrl => {
+                    if (currentUrls.includes(iUrl.url)) {
+                        duplicatedInfo.push(`Encontrado em: ${iUrl.context}\nLink: ${iUrl.url}`);
+                    }
+                });
+            });
+
+            if (duplicatedInfo.length > 0) {
+                document.getElementById('duplicate-warning-content').innerText = duplicatedInfo.join('\n\n');
+                document.getElementById('duplicate-warning-modal').classList.add('show');
+                return;
+            }
+
+            pendingPublishData = data;
+            
+            let previewText = `TÍTULO: ${data.title}\nTIPO: ${data.type.toUpperCase()}\nANO: ${data.year}\nHDCAM: ${data.isHDCAM ? 'SIM' : 'NÃO'}\nPREMIUM: ${data.isGlobalPremium ? 'SIM' : 'NÃO'}\n\n`;
+            if (data.rootScheduleDate) previewText += `AGENDAMENTO GLOBAL: ${data.rootScheduleDate.replace('T', ' ')}\n`;
+            if (data.type === 'movie') {
+                previewText += `LINK PRINCIPAL: ${data.links.main || 'Nenhum'}`;
+            } else {
+                previewText += `${data.seasons.length} Temporada(s)`;
+            }
+
+            document.getElementById('preview-content').innerText = previewText;
+            document.getElementById('preview-title').innerText = isEditing ? "Resumo da Edição" : "Resumo da Publicação";
+            pendingModalAction = 'publish';
+            document.getElementById('preview-modal').classList.add('show');
+        };
+
+        window.closePreviewModal = function() { document.getElementById('preview-modal').classList.remove('show'); pendingModalAction = null; };
+
+        window.confirmAction = async function() {
+            if (pendingModalAction === 'publish') {
+                document.getElementById('preview-modal').classList.remove('show');
+                document.getElementById('btn-final-publish').disabled = true;
+                document.getElementById('btn-final-publish').innerText = "Processando...";
+                try {
+                    if (isEditing && editingDocId) {
+                        delete pendingPublishData.createdAt;
+                        await updateDoc(doc(db, "content", editingDocId), pendingPublishData);
+                        showToast("Atualizado! (Lembre-se de SINCRONIZAR)", "success");
+                    } else {
+                        await addDoc(collection(db, "content"), pendingPublishData);
+                        showToast("Publicado! (Lembre-se de SINCRONIZAR)", "success");
+                    }
+                    openAdminMenu();
+                } catch (e) { showToast("Erro ao processar", "error"); }
+                finally {
+                    document.getElementById('btn-final-publish').disabled = false;
+                    document.getElementById('btn-final-publish').innerText = "Publicar Conteúdo";
+                    pendingModalAction = null;
+                }
+            } else if (pendingModalAction === 'assignPremium') {
+                document.getElementById('preview-modal').classList.remove('show');
+                try {
+                    await updateDoc(doc(db, "users", pendingPublishData.uid), {
+                        premiumPlan: pendingPublishData.plan,
+                        premiumExpiresAt: pendingPublishData.expiresAt
+                    });
+                    showToast("Premium enviado com sucesso!", "success");
+                    openAdminMenu();
+                } catch (e) { showToast("Erro ao assinar Premium", "error"); }
+                finally { pendingModalAction = null; }
+            }
+        };
+
+        let showOnlyDrafts = false;
+        window.toggleDraftsOnly = function() {
+            showOnlyDrafts = !showOnlyDrafts;
+            const btn = document.getElementById('btn-toggle-drafts');
+            if(showOnlyDrafts) {
+                btn.classList.add('active');
+                btn.innerText = "Mostrando Rascunhos";
+            } else {
+                btn.classList.remove('active');
+                btn.innerText = "Rascunhos";
+            }
+            filterEditList();
+        };
+
+        window.filterEditList = function() {
+            const val = normalizeStr(document.getElementById('edit-search').value);
+            let filtered = allPublishedContent.filter(c => normalizeStr(c.title).includes(val));
+            if(showOnlyDrafts) {
+                filtered = filtered.filter(c => c.isDraft === true);
+            }
+            renderEditList(filtered);
+        };
+
+        function renderEditList(list) {
+            const cont = document.getElementById('edit-list-container');
+            cont.innerHTML = '';
+            list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'edit-item';
+                
+                let hdcamBadge = item.isHDCAM ? `<div class="hdcam-badge" style="position:relative; display:inline-block; top:0; right:0; margin-top:5px;">HDCAM</div>` : '';
+                let premBadge = item.isGlobalPremium ? `<div class="hdcam-badge" style="position:relative; display:inline-block; top:0; right:0; margin-top:5px; background:linear-gradient(45deg, #ffaa00, #ffdd00);">PREMIUM</div>` : '';
+                let vertBadge = item.isVertical ? `<div class="vertical-badge-adm" style="position:relative; display:inline-block; top:0; right:0; margin-top:5px;">VERTICAL</div>` : '';
+                let draftBadge = item.isDraft ? `<div class="draft-badge">RASCUNHO</div>` : '';
+                
+                div.innerHTML = `
+                    <input type="checkbox" class="batch-select-cb" value="${item.id}">
+                    ${draftBadge}
+                    <img src="${item.poster || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23222%22%3E%3Cpath d=%22M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z%22/%3E%3C/svg%3E'}" loading="lazy" style="margin-left: 5px;">
+                    <div class="edit-item-info">
+                        <div class="edit-item-title">${item.title}</div>
+                        <div class="edit-item-type">${item.type === 'movie' ? 'Filme' : 'Série'} • ${item.year || ''}</div>
+                        ${hdcamBadge} ${premBadge} ${vertBadge}
+                    </div>
+                    <div class="edit-actions">
+                        <button class="draft-btn" onclick="toggleDraftStatus('${item.id}', ${item.isDraft})" title="Marcar/Desmarcar Rascunho">
+                            <svg viewBox="0 0 24 24"><path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"/></svg>
+                        </button>
+                        <button onclick="editContent('${item.id}')" title="Editar"><svg viewBox="0 0 24 24"><path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"/></svg></button>
+                        <button class="del-btn" onclick="openDeleteModal('${item.id}')" title="Excluir"><svg viewBox="0 0 24 24"><path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"/></svg></button>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        window.toggleSelectAll = function() {
+            const isChecked = document.getElementById('select-all-batch').checked;
+            document.querySelectorAll('.batch-select-cb').forEach(cb => {
+                cb.checked = isChecked;
+            });
+        };
+
+        window.applyBatchPremium = async function(isPremium) {
+            const checkboxes = document.querySelectorAll('.batch-select-cb:checked');
+            if(checkboxes.length === 0) {
+                showToast("Nenhum item selecionado", "error");
+                return;
+            }
+            showToast("Processando lote...", "success");
+            for (let cb of checkboxes) {
+                try {
+                    await updateDoc(doc(db, "content", cb.value), { isGlobalPremium: isPremium });
+                } catch(e) {}
+            }
+            showToast(`Atualizado ${checkboxes.length} itens.`, "success");
+            document.getElementById('select-all-batch').checked = false;
+        };
+
+        window.toggleDraftStatus = async function(id, currentStatus) {
+            try {
+                await updateDoc(doc(db, "content", id), { isDraft: !currentStatus });
+                showToast(currentStatus ? "Publicado!" : "Movido para rascunhos!", "success");
+            } catch (e) {
+                showToast("Erro ao alterar status", "error");
+            }
+        };
+
+        window.openDeleteModal = function(id, type = 'content') {
+            document.querySelector('#delete-modal .modal-title').innerText = "Excluir Permanente";
+            document.querySelector('#delete-modal .modal-text').innerText = "Esta ação é irreversível. Deseja deletar?";
+            docToDelete = id;
+            pendingModalAction = type === 'wp' ? 'deleteWP' : 'deleteContent';
+            document.getElementById('delete-modal').classList.add('show');
+        };
+        window.closeDeleteModal = function() {
+            docToDelete = null;
+            pendingModalAction = null;
+            document.getElementById('delete-modal').classList.remove('show');
+        };
+        window.confirmDelete = async function() {
+            if (!docToDelete) return;
+            document.getElementById('delete-modal').classList.remove('show');
+            try {
+                if (pendingModalAction === 'deleteReport') {
+                    await deleteDoc(doc(db, "reports", docToDelete));
+                    showToast("Relatório excluído", "success");
+                    window.openAdminReports(); 
+                } else if (pendingModalAction === 'deleteWP') {
+                    await remove(ref(rtdb, `watch_rooms/${docToDelete}`));
+                    await remove(ref(rtdb, `watch_chat/${docToDelete}`));
+                    showToast("Sala Watch Party encerrada!", "success");
+                    window.openAdminWatchParties();
+                } else if (pendingModalAction === 'clearGlobalChat') {
+                    await remove(ref(rtdb, 'global_chat'));
+                    showToast("O Chat Global foi apagado com sucesso!", "success");
+                } else {
+                    await deleteDoc(doc(db, "content", docToDelete));
+                    showToast("Conteúdo excluído! (Lembre-se de SINCRONIZAR)", "success");
+                }
+            } catch (e) { showToast("Erro ao excluir", "error"); }
+            finally { pendingModalAction = null; }
+        };
+
+        window.editContent = function(id) {
+            const data = allPublishedContent.find(c => c.id === id);
+            if (!data) return;
+            
+            openAdminPublicar();
+            isEditing = true;
+            editingDocId = id;
+            document.getElementById('admin-main-title').innerText = "EDITANDO CONTEÚDO";
+            document.getElementById('btn-final-publish').innerText = "Atualizar Conteúdo";
+            
+            setPublishType(data.type);
+            
+            document.getElementById('pub-tmdb-id').value = data.tmdbId || '';
+            document.getElementById('pub-poster').value = data.poster || '';
+            document.getElementById('pub-custom-poster').value = '';
+            document.getElementById('pub-backdrop').value = data.backdrop || '';
+            document.getElementById('pub-collection').value = data.collection || '';
+            document.getElementById('pub-original-title').value = data.originalTitle || '';
+            document.getElementById('pub-clear-logo').value = data.clearLogo || '';
+            document.getElementById('pub-latest-thumb').value = data.latestThumb || '';
+            if (data.poster) {
+                const img = document.getElementById('pub-poster-preview');
+                img.src = data.poster;
+                img.classList.remove('hidden');
+            }
+            document.getElementById('pub-title').value = data.title || '';
+            document.getElementById('pub-synopsis').value = data.synopsis || '';
+            document.getElementById('pub-actors').value = data.actors || '';
+            document.getElementById('pub-streaming').value = data.streaming || '';
+            document.getElementById('pub-genres').value = data.genres || '';
+            document.getElementById('pub-year').value = data.year || '';
+            document.getElementById('pub-root-schedule').value = data.rootScheduleDate || '';
+            
+            if (data.isHDCAM) document.getElementById('badge-hdcam').classList.add('active');
+            else document.getElementById('badge-hdcam').classList.remove('active');
+            
+            if (data.isVertical) document.getElementById('badge-vertical').classList.add('active');
+            else document.getElementById('badge-vertical').classList.remove('active');
+if (data.isGlobalPremium) document.getElementById('badge-global-premium').classList.add('active');
+            else document.getElementById('badge-global-premium').classList.remove('active');
+
+            if (data.type === 'movie') {
+                if(data.links) {
+                    document.getElementById('pub-movie-main').value = data.links.main || '';
+                    if (data.links.drive) {
+                        document.getElementById('badge-movie-drive').classList.add('active');
+                        document.getElementById('input-movie-drive').classList.remove('hidden');
+                        document.getElementById('input-movie-drive').value = data.links.drive;
+                    }
+                    if (data.links.telegram) {
+                        document.getElementById('badge-movie-telegram').classList.add('active');
+                        document.getElementById('input-movie-telegram').classList.remove('hidden');
+                        document.getElementById('input-movie-telegram').value = data.links.telegram;
+                    }
+                const custContainer = document.getElementById('custom-links-container');
+                    if(custContainer) custContainer.innerHTML = '';
+                    if(data.links.custom && data.links.custom.length > 0) {
+                        data.links.custom.forEach(cLink => window.addCustomServerBox(cLink));
+                    }
+}
+            } else if (data.type === 'tv' && data.seasons) {
+                seriesData = JSON.parse(JSON.stringify(data.seasons));
+                
+                seriesData.forEach(s => {
+                    if(s.isExpanded === undefined) s.isExpanded = false; 
+                    s.episodes.forEach(e => {
+                        e.hasSchedule = e.scheduleDate !== undefined && e.scheduleDate !== '';
+                        if(e.links) {
+                            e.has_drive = e.links.drive && e.links.drive !== '';
+                            e.has_telegram = e.links.telegram && e.links.telegram !== '';
+                        }
+                    });
+                });
+                
+                renderSeasonsUI();
+            }
+        };
+
+        function setupRealtimeListener() {
+            if (unsubscribeContent) unsubscribeContent();
+            unsubscribeContent = onSnapshot(collection(db, "content"), (snap) => {
+                allPublishedContent = [];
+                snap.forEach(d => allPublishedContent.push({id: d.id, ...d.data()}));
+                if (document.getElementById('aba-admin').classList.contains('active') && !document.getElementById('admin-editar').classList.contains('hidden')) filterEditList();
+            });
+        }
+
+        setupRealtimeListener();
+
+        // --- SISTEMA DE GERAÇÃO SEQUENCIAL DE LINKS (LOTES/TEMPORADAS) ---
+        window.seqSeasonCounter = 0;
+
+        window.addSeqRow = function() {
+            window.seqSeasonCounter++;
+            const cont = document.getElementById('seq-generator-list');
+            if(!cont) return;
+            const div = document.createElement('div');
+            div.className = 'seq-row';
+            div.id = `seq-row-${window.seqSeasonCounter}`;
+            div.style.cssText = "display:flex; gap:10px; align-items:flex-end; background:#111; padding:15px; border-radius:12px; border:1px solid #222; flex-wrap:wrap;";
+            div.innerHTML = `
+                <div style="width:60px; min-width:60px;">
+                    <label style="font-size:10px; color:#888; font-weight:800; text-transform:uppercase; margin-bottom:4px; display:block;">Temp</label>
+                    <input type="number" class="input-base seq-season-num" style="padding:10px; text-align:center;" value="${window.seqSeasonCounter}">
+                </div>
+                <div style="flex-grow:1; min-width:200px;">
+                    <label style="font-size:10px; color:#888; font-weight:800; text-transform:uppercase; margin-bottom:4px; display:block;">Link Base (Ep 1)</label>
+                    <input type="text" class="input-base seq-link-base" style="padding:10px;" placeholder="Ex: .../981492.mp4">
+                </div>
+                <div style="width:80px; min-width:80px;">
+                    <label style="font-size:10px; color:#888; font-weight:800; text-transform:uppercase; margin-bottom:4px; display:block;">Qtd Eps</label>
+                    <input type="number" class="input-base seq-qty" style="padding:10px; text-align:center;" placeholder="Ex: 13">
+                </div>
+                <button class="btn-small" style="background:#ff4a4a; color:#fff; padding:10px 14px; height:41px;" onclick="document.getElementById('seq-row-${window.seqSeasonCounter}').remove()">X</button>
+            `;
+            cont.appendChild(div);
+            cont.scrollTop = cont.scrollHeight;
+        };
+
+        window.resetSeqGenerator = function() {
+            const cont = document.getElementById('seq-generator-list');
+            if(cont) cont.innerHTML = '';
+            window.seqSeasonCounter = 0;
+            window.addSeqRow();
+        };
+
+        window.processSeqGenerator = function() {
+            const rows = document.querySelectorAll('.seq-row');
+            let successCount = 0;
+            let errorCount = 0;
+
+            rows.forEach(row => {
+                const sNumVal = row.querySelector('.seq-season-num').value;
+                const linkBase = row.querySelector('.seq-link-base').value.trim();
+                const qtyVal = row.querySelector('.seq-qty').value;
+
+                if (!sNumVal || !linkBase || !qtyVal) return;
+
+                const seasonNum = parseInt(sNumVal);
+                const qty = parseInt(qtyVal);
+
+                // Expressão Regular para capturar os números finais antes da extensão .mp4
+                const regex = /(\d+)(?=\.mp4)/i;
+                const match = linkBase.match(regex);
+
+                if (match) {
+                    const numStr = match[1];
+                    const startNum = parseInt(numStr);
+                    const prefix = linkBase.substring(0, match.index);
+                    const suffix = linkBase.substring(match.index + numStr.length);
+
+                    // Localiza a temporada na memória ou cria uma nova
+                    let season = seriesData.find(s => s.seasonNum === seasonNum);
+                    if (!season) {
+                        season = { seasonNum: seasonNum, scheduleDate: '', episodes: [], isExpanded: true };
+                        seriesData.push(season);
+                    }
+
+                    // Loop matador para gerar e preencher os links
+                    for (let i = 0; i < qty; i++) {
+                        const epNum = i + 1;
+                        const currentNum = startNum + i;
+                        // O padStart garante que não percamos zeros a esquerda (ex: 001 -> 002)
+                        const formatted = currentNum.toString().padStart(numStr.length, '0');
+                        const finalLink = prefix + formatted + suffix;
+
+                        let ep = season.episodes.find(e => e.epNum === epNum);
+                        if (!ep) {
+                            ep = { epNum: epNum, scheduleDate: '', hasSchedule: false, links: { main: '', drive: '', telegram: '' } };
+                            season.episodes.push(ep);
+                        }
+                        if (!ep.links) ep.links = { main: '', drive: '', telegram: '' };
+                        
+                        // Substitui de forma forçada e cirúrgica o link principal
+                        ep.links.main = finalLink;
+                    }
+
+                    season.episodes.sort((a, b) => a.epNum - b.epNum);
+                    season.isExpanded = true;
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            });
+
+            if (successCount > 0) {
+                seriesData.sort((a, b) => a.seasonNum - b.seasonNum);
+                renderSeasonsUI();
+                showToast(successCount + " Temporada(s) preenchida(s) com sucesso!", 'success');
+                if (errorCount > 0) {
+                    setTimeout(() => showToast(errorCount + " links com formato inválido foram ignorados.", 'error'), 2000);
+                }
+            } else if (errorCount > 0) {
+                showToast("Erro: O link base precisa de um ID numérico colado com '.mp4'.", "error");
+            } else {
+                showToast("Preencha ao menos uma temporada.", "warning");
+            }
+        };
+
+        // Hook discreto para quando mudar de Filme para Série, iniciar a primeira linha limpa
+        const originalSetPublishType = window.setPublishType;
+        window.setPublishType = function(type) {
+            originalSetPublishType(type);
+            if (type === 'tv') {
+                const cont = document.getElementById('seq-generator-list');
+                if (cont && cont.children.length === 0) {
+                    window.resetSeqGenerator();
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
